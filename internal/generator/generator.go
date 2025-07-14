@@ -14,6 +14,8 @@ import (
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 )
 
 type HTMLGenerator struct {
@@ -31,13 +33,20 @@ func NewHTMLGenerator() *HTMLGenerator {
 			return template.HTML(s)
 		},
 	})
-	
+
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			extension.GFM,
 			extension.Table,
 			extension.Strikethrough,
 			extension.TaskList,
+			highlighting.NewHighlighting(
+				highlighting.WithStyle("monokai"),
+				highlighting.WithFormatOptions(
+					chromahtml.WithClasses(true),
+					chromahtml.WithLineNumbers(false),
+				),
+			),
 		),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),
@@ -47,7 +56,7 @@ func NewHTMLGenerator() *HTMLGenerator {
 			html.WithXHTML(),
 		),
 	)
-	
+
 	return &HTMLGenerator{
 		template:     template.Must(tmpl.Parse(htmlTemplate)),
 		styleManager: styles.NewStyleManager(),
@@ -60,7 +69,7 @@ func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string
 	if err != nil {
 		return fmt.Errorf("failed to get style: %w", err)
 	}
-	
+
 	data := struct {
 		Script *script.Script
 		Slides []SlideData
@@ -82,10 +91,10 @@ func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string
 
 type SlideData struct {
 	script.Slide
-	Index              int
-	ImageSrc           string
-	ContentHTML        template.HTML
-	TranscriptionHTML  template.HTML
+	Index             int
+	ImageSrc          string
+	ContentHTML       template.HTML
+	TranscriptionHTML template.HTML
 }
 
 func (h *HTMLGenerator) processSlides(slides []script.Slide) []SlideData {
