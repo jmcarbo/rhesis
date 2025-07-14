@@ -120,29 +120,111 @@ body {
     color: #f8f8f2;
 }
 
-/* Syntax highlighting - Dracula inspired */
-.hljs-keyword { color: #ff79c6; font-weight: 600; }  /* Pink */
-.hljs-string { color: #f1fa8c; }  /* Yellow */
-.hljs-comment { color: #6272a4; font-style: italic; }  /* Comment purple */
-.hljs-number { color: #bd93f9; }  /* Purple */
-.hljs-function { color: #50fa7b; font-weight: 600; }  /* Green */
-.hljs-class { color: #8be9fd; font-weight: 600; }  /* Cyan */
-.hljs-attribute { color: #50fa7b; }  /* Green */
-.hljs-built_in { color: #8be9fd; font-style: italic; }  /* Cyan italic */
-.hljs-type { color: #8be9fd; }  /* Cyan */
-.hljs-variable { color: #f8f8f2; }  /* Foreground */
-.hljs-title { color: #50fa7b; font-weight: 600; }  /* Green */
-.hljs-params { color: #ffb86c; font-style: italic; }  /* Orange italic */
-.hljs-operator { color: #ff79c6; }  /* Pink */
-.hljs-literal { color: #bd93f9; }  /* Purple */
-.hljs-meta { color: #ff79c6; }  /* Pink */
-.hljs-regexp { color: #ff5555; }  /* Red */
-.hljs-selector-tag { color: #ff79c6; }  /* Pink */
-.hljs-selector-class { color: #50fa7b; }  /* Green */
-.hljs-selector-id { color: #8be9fd; }  /* Cyan */
-.hljs-tag { color: #ff79c6; }  /* Pink */
-.hljs-name { color: #ff79c6; }  /* Pink */
-.hljs-attr { color: #50fa7b; }  /* Green */
+/* Chroma Syntax Highlighting - Dracula inspired */
+/* Keywords */
+.k { color: #ff79c6; font-weight: 600; }  /* Keyword - Pink */
+.kc { color: #bd93f9; }  /* KeywordConstant - Purple */
+.kd { color: #8be9fd; font-style: italic; }  /* KeywordDeclaration - Cyan italic */
+.kn { color: #ff79c6; }  /* KeywordNamespace - Pink */
+.kp { color: #ff79c6; }  /* KeywordPseudo - Pink */
+.kr { color: #8be9fd; }  /* KeywordReserved - Cyan */
+.kt { color: #8be9fd; }  /* KeywordType - Cyan */
+
+/* Names */
+.n { color: #f8f8f2; }  /* Name - Foreground */
+.na { color: #50fa7b; }  /* NameAttribute - Green */
+.nb { color: #8be9fd; font-style: italic; }  /* NameBuiltin - Cyan italic */
+.bp { color: #f8f8f2; }  /* NameBuiltinPseudo - Foreground */
+.nc { color: #8be9fd; font-weight: 600; }  /* NameClass - Cyan */
+.no { color: #bd93f9; }  /* NameConstant - Purple */
+.nd { color: #50fa7b; }  /* NameDecorator - Green */
+.ni { color: #f8f8f2; }  /* NameEntity - Foreground */
+.ne { color: #8be9fd; font-weight: 600; }  /* NameException - Cyan */
+.nf { color: #50fa7b; font-weight: 600; }  /* NameFunction - Green */
+.fm { color: #50fa7b; }  /* NameFunctionMagic - Green */
+.py { color: #f8f8f2; }  /* NameProperty - Foreground */
+.nl { color: #f8f8f2; }  /* NameLabel - Foreground */
+.nn { color: #f8f8f2; }  /* NameNamespace - Foreground */
+.nx { color: #50fa7b; }  /* NameOther - Green */
+.nt { color: #ff79c6; }  /* NameTag - Pink */
+.nv { color: #f8f8f2; }  /* NameVariable - Foreground */
+.vc { color: #f8f8f2; }  /* NameVariableClass - Foreground */
+.vg { color: #f8f8f2; }  /* NameVariableGlobal - Foreground */
+.vi { color: #f8f8f2; }  /* NameVariableInstance - Foreground */
+.vm { color: #f8f8f2; }  /* NameVariableMagic - Foreground */
+
+/* Literals */
+.l { color: #bd93f9; }  /* Literal - Purple */
+.ld { color: #f1fa8c; }  /* LiteralDate - Yellow */
+
+/* Strings */
+.s { color: #f1fa8c; }  /* String - Yellow */
+.sa { color: #f1fa8c; }  /* StringAffix - Yellow */
+.sb { color: #f1fa8c; }  /* StringBacktick - Yellow */
+.sc { color: #f1fa8c; }  /* StringChar - Yellow */
+.dl { color: #f1fa8c; }  /* StringDelimiter - Yellow */
+.sd { color: #f1fa8c; font-style: italic; }  /* StringDoc - Yellow italic */
+.s2 { color: #f1fa8c; }  /* StringDouble - Yellow */
+.se { color: #ff5555; font-weight: 600; }  /* StringEscape - Red bold */
+.sh { color: #f1fa8c; }  /* StringHeredoc - Yellow */
+.si { color: #f1fa8c; }  /* StringInterpol - Yellow */
+.sx { color: #f1fa8c; }  /* StringOther - Yellow */
+.sr { color: #ff5555; }  /* StringRegex - Red */
+.s1 { color: #f1fa8c; }  /* StringSingle - Yellow */
+.ss { color: #f1fa8c; }  /* StringSymbol - Yellow */
+
+/* Numbers */
+.m { color: #bd93f9; }  /* Number - Purple */
+.mb { color: #bd93f9; }  /* NumberBin - Purple */
+.mf { color: #bd93f9; }  /* NumberFloat - Purple */
+.mh { color: #bd93f9; }  /* NumberHex - Purple */
+.mi { color: #bd93f9; }  /* NumberInteger - Purple */
+.il { color: #bd93f9; }  /* NumberIntegerLong - Purple */
+.mo { color: #bd93f9; }  /* NumberOct - Purple */
+
+/* Operators */
+.o { color: #ff79c6; }  /* Operator - Pink */
+.ow { color: #ff79c6; font-weight: 600; }  /* OperatorWord - Pink bold */
+
+/* Punctuation */
+.p { color: #f8f8f2; }  /* Punctuation - Foreground */
+.pi { color: #f8f8f2; }  /* PunctuationIndicator - Foreground */
+
+/* Comments */
+.c { color: #6272a4; font-style: italic; }  /* Comment - Comment purple italic */
+.ch { color: #6272a4; font-style: italic; }  /* CommentHashbang - Comment purple italic */
+.cm { color: #6272a4; font-style: italic; }  /* CommentMultiline - Comment purple italic */
+.cp { color: #6272a4; font-weight: 600; }  /* CommentPreproc - Comment purple bold */
+.cpf { color: #6272a4; font-style: italic; }  /* CommentPreprocFile - Comment purple italic */
+.c1 { color: #6272a4; font-style: italic; }  /* CommentSingle - Comment purple italic */
+.cs { color: #6272a4; font-weight: 600; font-style: italic; }  /* CommentSpecial - Comment purple bold italic */
+
+/* Generic types (for diffs, errors, etc.) */
+.g { color: #f8f8f2; }  /* Generic - Foreground */
+.gd { color: #ff5555; background: rgba(255, 85, 85, 0.1); }  /* GenericDeleted - Red with bg */
+.ge { font-style: italic; }  /* GenericEmph - Italic */
+.gr { color: #ff5555; }  /* GenericError - Red */
+.gh { color: #f8f8f2; font-weight: 600; }  /* GenericHeading - Foreground bold */
+.gi { color: #50fa7b; background: rgba(80, 250, 123, 0.1); }  /* GenericInserted - Green with bg */
+.go { color: #6272a4; }  /* GenericOutput - Comment purple */
+.gp { color: #8be9fd; font-weight: 600; }  /* GenericPrompt - Cyan bold */
+.gs { font-weight: 600; }  /* GenericStrong - Bold */
+.gu { color: #6272a4; }  /* GenericSubheading - Comment purple */
+.gt { color: #ff5555; }  /* GenericTraceback - Red */
+
+/* Other token types */
+.w { }  /* Whitespace - No special styling */
+.err { color: #ff5555; background: rgba(255, 85, 85, 0.2); }  /* Error - Red with bg */
+.x { color: #f8f8f2; }  /* Other - Foreground */
+
+/* Line numbering and highlighting */
+.ln { color: #6272a4; user-select: none; }  /* LineNumbers - Comment purple */
+.hl { background: rgba(98, 114, 164, 0.1); display: block; width: 100%; }  /* LineHighlight */
+
+/* Code container */
+.chroma { }  /* PreWrapper - Container for syntax highlighted code */
+.line { display: inline-block; }  /* Line wrapper */
+.cl { display: inline-block; }  /* CodeLine wrapper */
 
 .slide img {
     max-width: 90%;

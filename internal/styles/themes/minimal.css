@@ -105,29 +105,111 @@ body {
     color: #333;
 }
 
-/* Syntax highlighting - Clean vibrant palette */
-.hljs-keyword { color: #d14; font-weight: 600; }  /* Red */
-.hljs-string { color: #690; }  /* Green */
-.hljs-comment { color: #999; font-style: italic; }  /* Gray */
-.hljs-number { color: #09a; }  /* Teal */
-.hljs-function { color: #07a; font-weight: 600; }  /* Blue */
-.hljs-class { color: #e90; font-weight: 600; }  /* Orange */
-.hljs-attribute { color: #1a8; }  /* Dark cyan */
-.hljs-built_in { color: #e36; }  /* Pink */
-.hljs-type { color: #606; }  /* Purple */
-.hljs-variable { color: #008; }  /* Dark blue */
-.hljs-title { color: #d14; font-weight: 600; }  /* Red */
-.hljs-params { color: #666; }  /* Dark gray */
-.hljs-operator { color: #000; font-weight: 600; }  /* Black */
-.hljs-literal { color: #09a; }  /* Teal */
-.hljs-meta { color: #999; }  /* Gray */
-.hljs-regexp { color: #b68; }  /* Plum */
-.hljs-selector-tag { color: #07a; }  /* Blue */
-.hljs-selector-class { color: #e90; }  /* Orange */
-.hljs-selector-id { color: #d14; }  /* Red */
-.hljs-tag { color: #008; }  /* Dark blue */
-.hljs-name { color: #07a; }  /* Blue */
-.hljs-attr { color: #1a8; }  /* Dark cyan */
+/* Chroma Syntax Highlighting - Clean vibrant palette */
+/* Keywords */
+.k { color: #d14; font-weight: 600; }  /* Keyword - Red */
+.kc { color: #09a; }  /* KeywordConstant - Teal */
+.kd { color: #07a; font-style: italic; }  /* KeywordDeclaration - Blue italic */
+.kn { color: #d14; }  /* KeywordNamespace - Red */
+.kp { color: #d14; }  /* KeywordPseudo - Red */
+.kr { color: #07a; }  /* KeywordReserved - Blue */
+.kt { color: #606; }  /* KeywordType - Purple */
+
+/* Names */
+.n { color: #333; }  /* Name - Default text */
+.na { color: #1a8; }  /* NameAttribute - Dark cyan */
+.nb { color: #e36; }  /* NameBuiltin - Pink */
+.bp { color: #333; }  /* NameBuiltinPseudo - Default text */
+.nc { color: #e90; font-weight: 600; }  /* NameClass - Orange */
+.no { color: #09a; }  /* NameConstant - Teal */
+.nd { color: #e90; }  /* NameDecorator - Orange */
+.ni { color: #333; }  /* NameEntity - Default text */
+.ne { color: #e90; font-weight: 600; }  /* NameException - Orange */
+.nf { color: #07a; font-weight: 600; }  /* NameFunction - Blue */
+.fm { color: #07a; }  /* NameFunctionMagic - Blue */
+.py { color: #333; }  /* NameProperty - Default text */
+.nl { color: #333; }  /* NameLabel - Default text */
+.nn { color: #333; }  /* NameNamespace - Default text */
+.nx { color: #07a; }  /* NameOther - Blue */
+.nt { color: #07a; }  /* NameTag - Blue */
+.nv { color: #008; }  /* NameVariable - Dark blue */
+.vc { color: #008; }  /* NameVariableClass - Dark blue */
+.vg { color: #008; }  /* NameVariableGlobal - Dark blue */
+.vi { color: #008; }  /* NameVariableInstance - Dark blue */
+.vm { color: #008; }  /* NameVariableMagic - Dark blue */
+
+/* Literals */
+.l { color: #09a; }  /* Literal - Teal */
+.ld { color: #690; }  /* LiteralDate - Green */
+
+/* Strings */
+.s { color: #690; }  /* String - Green */
+.sa { color: #690; }  /* StringAffix - Green */
+.sb { color: #690; }  /* StringBacktick - Green */
+.sc { color: #690; }  /* StringChar - Green */
+.dl { color: #690; }  /* StringDelimiter - Green */
+.sd { color: #690; font-style: italic; }  /* StringDoc - Green italic */
+.s2 { color: #690; }  /* StringDouble - Green */
+.se { color: #b68; font-weight: 600; }  /* StringEscape - Plum bold */
+.sh { color: #690; }  /* StringHeredoc - Green */
+.si { color: #690; }  /* StringInterpol - Green */
+.sx { color: #690; }  /* StringOther - Green */
+.sr { color: #b68; }  /* StringRegex - Plum */
+.s1 { color: #690; }  /* StringSingle - Green */
+.ss { color: #690; }  /* StringSymbol - Green */
+
+/* Numbers */
+.m { color: #09a; }  /* Number - Teal */
+.mb { color: #09a; }  /* NumberBin - Teal */
+.mf { color: #09a; }  /* NumberFloat - Teal */
+.mh { color: #09a; }  /* NumberHex - Teal */
+.mi { color: #09a; }  /* NumberInteger - Teal */
+.il { color: #09a; }  /* NumberIntegerLong - Teal */
+.mo { color: #09a; }  /* NumberOct - Teal */
+
+/* Operators */
+.o { color: #000; font-weight: 600; }  /* Operator - Black */
+.ow { color: #000; font-weight: 600; }  /* OperatorWord - Black bold */
+
+/* Punctuation */
+.p { color: #333; }  /* Punctuation - Default text */
+.pi { color: #333; }  /* PunctuationIndicator - Default text */
+
+/* Comments */
+.c { color: #999; font-style: italic; }  /* Comment - Gray italic */
+.ch { color: #999; font-style: italic; }  /* CommentHashbang - Gray italic */
+.cm { color: #999; font-style: italic; }  /* CommentMultiline - Gray italic */
+.cp { color: #999; font-weight: 600; }  /* CommentPreproc - Gray bold */
+.cpf { color: #999; font-style: italic; }  /* CommentPreprocFile - Gray italic */
+.c1 { color: #999; font-style: italic; }  /* CommentSingle - Gray italic */
+.cs { color: #999; font-weight: 600; font-style: italic; }  /* CommentSpecial - Gray bold italic */
+
+/* Generic types (for diffs, errors, etc.) */
+.g { color: #333; }  /* Generic - Default text */
+.gd { color: #d14; background: rgba(221, 17, 68, 0.1); }  /* GenericDeleted - Red with bg */
+.ge { font-style: italic; }  /* GenericEmph - Italic */
+.gr { color: #d14; }  /* GenericError - Red */
+.gh { color: #333; font-weight: 600; }  /* GenericHeading - Default text bold */
+.gi { color: #690; background: rgba(102, 153, 0, 0.1); }  /* GenericInserted - Green with bg */
+.go { color: #888; }  /* GenericOutput - Light gray */
+.gp { color: #07a; font-weight: 600; }  /* GenericPrompt - Blue bold */
+.gs { font-weight: 600; }  /* GenericStrong - Bold */
+.gu { color: #999; }  /* GenericSubheading - Gray */
+.gt { color: #d14; }  /* GenericTraceback - Red */
+
+/* Other token types */
+.w { }  /* Whitespace - No special styling */
+.err { color: #d14; background: rgba(221, 17, 68, 0.2); }  /* Error - Red with bg */
+.x { color: #333; }  /* Other - Default text */
+
+/* Line numbering and highlighting */
+.ln { color: #999; user-select: none; }  /* LineNumbers - Gray */
+.hl { background: rgba(0, 0, 0, 0.05); display: block; width: 100%; }  /* LineHighlight */
+
+/* Code container */
+.chroma { }  /* PreWrapper - Container for syntax highlighted code */
+.line { display: inline-block; }  /* Line wrapper */
+.cl { display: inline-block; }  /* CodeLine wrapper */
 
 .slide img {
     max-width: 85%;
