@@ -38,7 +38,7 @@ Thumbs.db
 bin/
 dist/
 build/
-rhesis
+./rhesis
 
 # Temporary files
 *.tmp

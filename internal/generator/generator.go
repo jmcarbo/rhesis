@@ -218,6 +218,18 @@ const htmlTemplate = `<!DOCTYPE html>
             flex: 1;
             width: 100%;
         }
+        
+        /* Responsive adjustments when transcription is not included */
+        @media (max-width: 768px) {
+            .presentation-container {
+                flex-direction: column;
+            }
+            
+            .slide-area {
+                flex: 1;
+                padding: 20px;
+            }
+        }
         {{end}}
     </style>
 </head>
