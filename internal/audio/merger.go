@@ -170,8 +170,49 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 	delay := videoDuration - audioDuration
 	fmt.Printf("Video duration: %.2fs, Audio duration: %.2fs, Delay: %.2fs\n", videoDuration, audioDuration, delay)
 
-	if delay < -1.0 {
-		// Video is significantly shorter than audio - this indicates a problem
+	// Check if audio is significantly longer than video (more than 3 seconds)
+	if delay < -3.0 {
+		// Audio is more than 3 seconds longer than video - adjust video framerate
+		fmt.Printf("Audio is %.2fs longer than video (threshold: 3s)\n", -delay)
+		fmt.Printf("Adjusting video framerate to match audio duration...\n")
+
+		// Create a temporary file for the adjusted video
+		tempDir, err := os.MkdirTemp("", "rhesis_framerate_*")
+		if err != nil {
+			return fmt.Errorf("failed to create temp directory: %w", err)
+		}
+		defer os.RemoveAll(tempDir)
+
+		adjustedVideoPath := filepath.Join(tempDir, "adjusted_video"+filepath.Ext(videoPath))
+
+		// Calculate the speed factor to stretch the video
+		speedFactor := videoDuration / audioDuration
+		fmt.Printf("Speed factor: %.4f (video will be slowed down to %.2f%% speed)\n", speedFactor, speedFactor*100)
+
+		// Use ffmpeg to adjust the video framerate/speed
+		adjustCmd := exec.Command(m.ffmpegPath,
+			"-i", videoPath,
+			"-filter:v", fmt.Sprintf("setpts=%.4f*PTS", 1.0/speedFactor),
+			"-an",             // Remove audio track from the adjusted video
+			"-c:v", "libx264", // Re-encode video with H.264
+			"-preset", "fast",
+			"-crf", "23",
+			adjustedVideoPath,
+		)
+
+		adjustOutput, err := adjustCmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("failed to adjust video framerate: %w\nOutput: %s", err, string(adjustOutput))
+		}
+
+		// Use the adjusted video for merging
+		videoPath = adjustedVideoPath
+		videoDuration = audioDuration // Update video duration to match audio
+		delay = 0                     // No delay after adjustment
+
+		fmt.Printf("Video framerate adjusted successfully. New duration: %.2fs\n", videoDuration)
+	} else if delay < -1.0 {
+		// Video is significantly shorter than audio but within 3s threshold
 		fmt.Printf("WARNING: Video is %.2fs shorter than expected audio duration!\n", -delay)
 		fmt.Printf("This usually means the video recording was truncated or stopped early.\n")
 	}
@@ -240,6 +281,7 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		}
 	} else {
 		// Copy video codec if compatible
+		// Note: If we adjusted the framerate, the video is already H.264
 		args = append(args, "-c:v", "copy")
 	}
 
