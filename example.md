@@ -119,7 +119,6 @@ Duration: 10
 network: {
   cell tower: {
     shape: cylinder
-    style.3d: true
   }
   
   phone: {
@@ -134,7 +133,6 @@ network: {
   
   server: {
     shape: cylinder
-    style.3d: true
   }
   
   cell tower -> phone: 4G/5G
@@ -144,7 +142,6 @@ network: {
   
   database: {
     shape: cylinder
-    style.3d: true
   }
 }
 ```
@@ -161,7 +158,7 @@ Duration: 12
 direction: right
 
 Frontend: {
-  shape: browser
+  shape: rectangle
   style.fill: "#4287f5"
   
   React: "React App"
@@ -173,6 +170,7 @@ Frontend: {
 API Gateway: {
   shape: hexagon
   style.fill: "#42f554"
+  style.3d: true
   
   Auth: "Authentication"
   Rate Limiter: "Rate Limiting"
@@ -181,7 +179,7 @@ API Gateway: {
 }
 
 Backend: {
-  shape: cloud
+  shape: rectangle
   style.fill: "#f54242"
   
   Services: {
@@ -214,12 +212,10 @@ This D2 diagram illustrates a typical microservices architecture. The frontend c
 Duration: 10
 
 ```d2
-shape: sequence_diagram
-
 Start: {shape: circle}
 Processing: {shape: rectangle}
-Success: {shape: hexagon; style.fill: "#90EE90"}
-Error: {shape: hexagon; style.fill: "#FFB6C1"}
+Success: {shape: hexagon; style.fill: "#90EE90"; style.3d: true}
+Error: {shape: hexagon; style.fill: "#FFB6C1"; style.3d: true}
 End: {shape: circle; style.multiple: true}
 
 Start -> Processing: "Initialize"
@@ -229,11 +225,13 @@ Success -> End: "Complete"
 Error -> Processing: "Retry"
 Error -> End: "Max Retries"
 
-Processing: {
-  Validate Data
-  Transform
-  Save to DB
-}
+Validate: "Validate Data" {shape: rectangle}
+Transform: "Transform Data" {shape: rectangle}
+Save: "Save to DB" {shape: rectangle}
+
+Processing -> Validate: "step 1"
+Validate -> Transform: "step 2"
+Transform -> Save: "step 3"
 ```
 
 ---
@@ -249,64 +247,52 @@ Duration: 10
 
 User: {
   shape: class
-  +id: int
-  +username: string
-  +email: string
-  +created_at: datetime
-  --
-  +login(): bool
-  +logout(): void
-  +updateProfile(): void
+  id: "int"
+  username: "string"
+  email: "string"
+  created_at: "datetime"
+  
+  login(): "bool"
+  logout(): "void"
+  updateProfile(): "void"
 }
 
 Post: {
   shape: class
-  +id: int
-  +title: string
-  +content: text
-  +published: bool
-  +created_at: datetime
-  --
-  +publish(): void
-  +archive(): void
-  +addComment(): void
+  id: "int"
+  title: "string"  
+  content: "text"
+  published: "bool"
+  created_at: "datetime"
+  
+  publish(): "void"
+  archive(): "void"
+  addComment(): "void"
 }
 
 Comment: {
   shape: class
-  +id: int
-  +content: text
-  +created_at: datetime
-  --
-  +edit(): void
-  +delete(): void
+  id: "int"
+  content: "text"
+  created_at: "datetime"
+  
+  edit(): "void"
+  delete(): "void"
 }
 
 Category: {
   shape: class
-  +id: int
-  +name: string
-  +slug: string
-  --
-  +getPosts(): []Post
+  id: "int"
+  name: "string"
+  slug: "string"
+  
+  getPosts(): "[]Post"
 }
 
-User -> Post: "1..*" {
-  source-arrowhead.shape: diamond
-  label: "writes"
-}
-
-User -> Comment: "1..*" {
-  label: "creates"
-}
-
-Post -> Comment: "1..*" {
-  label: "has"
-}
-
-Post -> Category: "*..*" {
-  label: "belongs to"
-}
+User -> Post: "writes\n1..*"
+User -> Comment: "creates\n1..*"
+Post -> Comment: "has\n1..*"
+Post -> Category: "belongs to\n*..*"
 ```
 
 ---
