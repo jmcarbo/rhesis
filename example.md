@@ -111,6 +111,48 @@ sequenceDiagram
 
 One of Go's most powerful features is its concurrency model. Goroutines are lightweight threads that can run concurrently with your main program. You start a goroutine by using the 'go' keyword before a function call. Channels are used to communicate between goroutines safely. In this example, we're creating a goroutine that sends a message through a channel, and then we receive that message in the main goroutine.
 
+## D2 Diagram Example
+
+Duration: 10
+
+```d2
+network: {
+  cell tower: {
+    shape: cylinder
+    style.3d: true
+  }
+  
+  phone: {
+    shape: rectangle
+    style.3d: true
+  }
+  
+  laptop: {
+    shape: rectangle  
+    style.3d: true
+  }
+  
+  server: {
+    shape: cylinder
+    style.3d: true
+  }
+  
+  cell tower -> phone: 4G/5G
+  phone -> server: API calls
+  laptop -> server: HTTPS
+  server -> database: SQL
+  
+  database: {
+    shape: cylinder
+    style.3d: true
+  }
+}
+```
+
+---
+
+D2 is a modern diagram scripting language that turns text to diagrams. It stands for Declarative Diagramming. Here we see a simple network architecture diagram showing how different components connect to each other. D2 makes it easy to create professional-looking diagrams with just a few lines of code.
+
 ## Thank You!
 
 Duration: 8

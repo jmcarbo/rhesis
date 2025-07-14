@@ -7,6 +7,7 @@ import (
 )
 
 // Embedded default styles
+//
 //go:embed themes/modern.css
 var ModernTheme string
 
@@ -29,13 +30,13 @@ func NewStyleManager() *StyleManager {
 	sm := &StyleManager{
 		themes: make(map[string]string),
 	}
-	
+
 	// Register embedded themes
 	sm.themes["modern"] = ModernTheme
 	sm.themes["minimal"] = MinimalTheme
 	sm.themes["dark"] = DarkTheme
 	sm.themes["elegant"] = ElegantTheme
-	
+
 	return sm
 }
 
@@ -45,7 +46,7 @@ func (sm *StyleManager) GetStyle(themeName string) (string, error) {
 	if css, ok := sm.themes[themeName]; ok {
 		return css, nil
 	}
-	
+
 	// Check if it's a file path
 	if _, err := os.Stat(themeName); err == nil {
 		content, err := os.ReadFile(themeName)
@@ -54,7 +55,7 @@ func (sm *StyleManager) GetStyle(themeName string) (string, error) {
 		}
 		return string(content), nil
 	}
-	
+
 	// Default to modern theme
 	return sm.themes["modern"], nil
 }
@@ -74,7 +75,7 @@ func (sm *StyleManager) LoadCustomTheme(name string, path string) error {
 	if err != nil {
 		return fmt.Errorf("failed to read custom theme: %w", err)
 	}
-	
+
 	sm.themes[name] = string(content)
 	return nil
 }
