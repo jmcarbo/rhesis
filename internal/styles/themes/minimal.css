@@ -368,6 +368,93 @@ body {
     background: #fafafa;
 }
 
+/* Mermaid diagram styling */
+.mermaid {
+    margin: 25px auto;
+    text-align: center;
+}
+
+.mermaid svg {
+    background: transparent !important;
+}
+
+/* Mermaid flowchart nodes */
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon {
+    fill: #ffffff !important;
+    stroke: #333333 !important;
+    stroke-width: 2px !important;
+}
+
+.mermaid .node text {
+    fill: #333333 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Mermaid flowchart links */
+.mermaid .edgePath .path {
+    stroke: #666666 !important;
+    stroke-width: 2px !important;
+}
+
+.mermaid .edgePath .arrowheadPath {
+    fill: #666666 !important;
+}
+
+.mermaid .edgeLabel {
+    background-color: #fafafa !important;
+    border-radius: 3px;
+    padding: 2px 4px;
+}
+
+.mermaid .edgeLabel text {
+    fill: #555555 !important;
+}
+
+/* Mermaid sequence diagram */
+.mermaid .actor {
+    fill: #f8f8f8 !important;
+    stroke: #333333 !important;
+}
+
+.mermaid .actor-line {
+    stroke: #999999 !important;
+    stroke-width: 1px !important;
+}
+
+.mermaid .messageLine0,
+.mermaid .messageLine1 {
+    stroke: #333333 !important;
+    stroke-width: 2px !important;
+}
+
+.mermaid .messageText {
+    fill: #333333 !important;
+}
+
+.mermaid .note {
+    fill: #f5f5f5 !important;
+    stroke: #666666 !important;
+}
+
+.mermaid .noteText {
+    fill: #333333 !important;
+}
+
+/* Mermaid subgraphs */
+.mermaid .cluster rect {
+    fill: rgba(248, 248, 248, 0.7) !important;
+    stroke: #999999 !important;
+    stroke-width: 1px !important;
+}
+
+.mermaid .cluster text {
+    fill: #666666 !important;
+    font-weight: 600 !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .presentation-container {

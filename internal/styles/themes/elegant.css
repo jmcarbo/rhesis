@@ -408,6 +408,93 @@ body {
     background: #faf8f5;
 }
 
+/* Mermaid diagram styling */
+.mermaid {
+    margin: 30px auto;
+    text-align: center;
+}
+
+.mermaid svg {
+    background: transparent !important;
+}
+
+/* Mermaid flowchart nodes */
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon {
+    fill: #f5f2ec !important;
+    stroke: #8b6914 !important;
+    stroke-width: 2px !important;
+}
+
+.mermaid .node text {
+    fill: #3a3a3a !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Mermaid flowchart links */
+.mermaid .edgePath .path {
+    stroke: #8b6914 !important;
+    stroke-width: 2px !important;
+}
+
+.mermaid .edgePath .arrowheadPath {
+    fill: #8b6914 !important;
+}
+
+.mermaid .edgeLabel {
+    background-color: #faf8f5 !important;
+    border-radius: 3px;
+    padding: 2px 4px;
+}
+
+.mermaid .edgeLabel text {
+    fill: #4a4a4a !important;
+}
+
+/* Mermaid sequence diagram */
+.mermaid .actor {
+    fill: #f5f2ec !important;
+    stroke: #8b6914 !important;
+}
+
+.mermaid .actor-line {
+    stroke: #b8860b !important;
+    stroke-width: 1px !important;
+}
+
+.mermaid .messageLine0,
+.mermaid .messageLine1 {
+    stroke: #8b6914 !important;
+    stroke-width: 2px !important;
+}
+
+.mermaid .messageText {
+    fill: #3a3a3a !important;
+}
+
+.mermaid .note {
+    fill: #faf8f5 !important;
+    stroke: #704214 !important;
+}
+
+.mermaid .noteText {
+    fill: #3a3a3a !important;
+}
+
+/* Mermaid subgraphs */
+.mermaid .cluster rect {
+    fill: rgba(139, 105, 20, 0.05) !important;
+    stroke: #b8860b !important;
+    stroke-width: 1px !important;
+}
+
+.mermaid .cluster text {
+    fill: #704214 !important;
+    font-weight: 600 !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .presentation-container {
