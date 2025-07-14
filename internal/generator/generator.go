@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jmcarbo/rhesis/internal/script"
 )
 
 type HTMLGenerator struct {
@@ -23,13 +25,13 @@ func NewHTMLGenerator() *HTMLGenerator {
 	}
 }
 
-func (h *HTMLGenerator) GeneratePresentation(script *Script, outputPath string) error {
+func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string) error {
 	data := struct {
-		Script *Script
+		Script *script.Script
 		Slides []SlideData
 	}{
-		Script: script,
-		Slides: h.processSlides(script.Slides),
+		Script: s,
+		Slides: h.processSlides(s.Slides),
 	}
 
 	file, err := os.Create(outputPath)
@@ -42,12 +44,12 @@ func (h *HTMLGenerator) GeneratePresentation(script *Script, outputPath string) 
 }
 
 type SlideData struct {
-	Slide
+	script.Slide
 	Index    int
 	ImageSrc string
 }
 
-func (h *HTMLGenerator) processSlides(slides []Slide) []SlideData {
+func (h *HTMLGenerator) processSlides(slides []script.Slide) []SlideData {
 	result := make([]SlideData, len(slides))
 	for i, slide := range slides {
 		result[i] = SlideData{
@@ -92,7 +94,7 @@ func (h *HTMLGenerator) imageToBase64(imagePath string) string {
 func base64Encode(data []byte) string {
 	const base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 	var result strings.Builder
-	
+
 	for i := 0; i < len(data); i += 3 {
 		var b1, b2, b3 byte
 		b1 = data[i]
@@ -102,23 +104,23 @@ func base64Encode(data []byte) string {
 		if i+2 < len(data) {
 			b3 = data[i+2]
 		}
-		
+
 		result.WriteByte(base64Chars[b1>>2])
 		result.WriteByte(base64Chars[((b1&0x03)<<4)|((b2&0xf0)>>4)])
-		
+
 		if i+1 < len(data) {
 			result.WriteByte(base64Chars[((b2&0x0f)<<2)|((b3&0xc0)>>6)])
 		} else {
 			result.WriteByte('=')
 		}
-		
+
 		if i+2 < len(data) {
 			result.WriteByte(base64Chars[b3&0x3f])
 		} else {
 			result.WriteByte('=')
 		}
 	}
-	
+
 	return result.String()
 }
 

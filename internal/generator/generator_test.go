@@ -1,9 +1,11 @@
-package main
+package generator
 
 import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/jmcarbo/rhesis/internal/script"
 )
 
 func TestNewHTMLGenerator(t *testing.T) {
@@ -17,9 +19,9 @@ func TestNewHTMLGenerator(t *testing.T) {
 }
 
 func TestGeneratePresentation(t *testing.T) {
-	script := &Script{
+	testScript := &script.Script{
 		Title: "Test Presentation",
-		Slides: []Slide{
+		Slides: []script.Slide{
 			{
 				Title:         "Slide 1",
 				Content:       "Content 1",
@@ -43,7 +45,7 @@ func TestGeneratePresentation(t *testing.T) {
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Close()
 
-	err = generator.GeneratePresentation(script, tmpFile.Name())
+	err = generator.GeneratePresentation(testScript, tmpFile.Name())
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 		return
@@ -108,9 +110,9 @@ func TestGeneratePresentationWithImage(t *testing.T) {
 	}
 	tmpImageFile.Close()
 
-	script := &Script{
+	testScript := &script.Script{
 		Title: "Test with Image",
-		Slides: []Slide{
+		Slides: []script.Slide{
 			{
 				Title:         "Slide with Image",
 				Image:         tmpImageFile.Name(),
@@ -128,7 +130,7 @@ func TestGeneratePresentationWithImage(t *testing.T) {
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Close()
 
-	err = generator.GeneratePresentation(script, tmpFile.Name())
+	err = generator.GeneratePresentation(testScript, tmpFile.Name())
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 		return
@@ -181,7 +183,7 @@ func TestBase64Encode(t *testing.T) {
 
 func TestProcessSlides(t *testing.T) {
 	generator := NewHTMLGenerator()
-	slides := []Slide{
+	slides := []script.Slide{
 		{Title: "Slide 1", Content: "Content 1"},
 		{Title: "Slide 2", Content: "Content 2"},
 	}
@@ -203,13 +205,13 @@ func TestProcessSlides(t *testing.T) {
 }
 
 func TestGeneratePresentationInvalidPath(t *testing.T) {
-	script := &Script{
+	testScript := &script.Script{
 		Title:  "Test",
-		Slides: []Slide{{Title: "Slide 1"}},
+		Slides: []script.Slide{{Title: "Slide 1"}},
 	}
 
 	generator := NewHTMLGenerator()
-	err := generator.GeneratePresentation(script, "/invalid/path/file.html")
+	err := generator.GeneratePresentation(testScript, "/invalid/path/file.html")
 	if err == nil {
 		t.Error("Expected error for invalid path")
 	}

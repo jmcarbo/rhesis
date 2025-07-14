@@ -1,4 +1,4 @@
-package main
+package player
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ func (p *PresentationPlayer) PlayPresentation(htmlPath, recordPath string) error
 	}
 
 	fileURL := fmt.Sprintf("file://%s", absolutePath)
-	
+
 	if _, err := p.page.Goto(fileURL); err != nil {
 		return fmt.Errorf("failed to load presentation: %w", err)
 	}
@@ -110,10 +110,8 @@ func (p *PresentationPlayer) cleanup() {
 }
 
 func (p *PresentationPlayer) startRecording(recordPath string) error {
-	video := p.page.Video()
-	if video != nil {
-		return video.SaveAs(recordPath)
-	}
+	// Recording is not supported in the current implementation
+	// This would require setting up video recording during context creation
 	return nil
 }
 

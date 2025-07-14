@@ -1,4 +1,4 @@
-package main
+package script
 
 import (
 	"os"
@@ -16,11 +16,11 @@ type Script struct {
 }
 
 type Slide struct {
-	Title        string `yaml:"title"`
-	Content      string `yaml:"content"`
-	Image        string `yaml:"image"`
+	Title         string `yaml:"title"`
+	Content       string `yaml:"content"`
+	Image         string `yaml:"image"`
 	Transcription string `yaml:"transcription"`
-	Duration     int    `yaml:"duration"`
+	Duration      int    `yaml:"duration"`
 }
 
 func ParseScript(path string) (*Script, error) {

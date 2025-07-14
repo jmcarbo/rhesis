@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/jmcarbo/rhesis/internal/generator"
+	"github.com/jmcarbo/rhesis/internal/script"
 )
 
 func TestEndToEndPresentationGeneration(t *testing.T) {
@@ -31,15 +34,15 @@ slides:
 		t.Fatalf("Failed to write script file: %v", err)
 	}
 
-	script, err := ParseScript(scriptFile)
+	parsedScript, err := script.ParseScript(scriptFile)
 	if err != nil {
 		t.Fatalf("Failed to parse script: %v", err)
 	}
 
-	generator := NewHTMLGenerator()
+	gen := generator.NewHTMLGenerator()
 	outputFile := filepath.Join(tmpDir, "presentation.html")
-	
-	err = generator.GeneratePresentation(script, outputFile)
+
+	err = gen.GeneratePresentation(parsedScript, outputFile)
 	if err != nil {
 		t.Fatalf("Failed to generate presentation: %v", err)
 	}
@@ -113,15 +116,15 @@ slides:
 		t.Fatalf("Failed to write script file: %v", err)
 	}
 
-	script, err := ParseScript(scriptFile)
+	parsedScript, err := script.ParseScript(scriptFile)
 	if err != nil {
 		t.Fatalf("Failed to parse script: %v", err)
 	}
 
-	generator := NewHTMLGenerator()
+	gen := generator.NewHTMLGenerator()
 	outputFile := filepath.Join(tmpDir, "presentation.html")
-	
-	err = generator.GeneratePresentation(script, outputFile)
+
+	err = gen.GeneratePresentation(parsedScript, outputFile)
 	if err != nil {
 		t.Fatalf("Failed to generate presentation: %v", err)
 	}
@@ -162,15 +165,15 @@ slides:
 		t.Fatalf("Failed to write script file: %v", err)
 	}
 
-	script, err := ParseScript(scriptFile)
+	parsedScript, err := script.ParseScript(scriptFile)
 	if err != nil {
 		t.Fatalf("Failed to parse script: %v", err)
 	}
 
-	generator := NewHTMLGenerator()
+	gen := generator.NewHTMLGenerator()
 	outputFile := filepath.Join(tmpDir, "workflow.html")
-	
-	err = generator.GeneratePresentation(script, outputFile)
+
+	err = gen.GeneratePresentation(parsedScript, outputFile)
 	if err != nil {
 		t.Fatalf("Failed to generate presentation: %v", err)
 	}
@@ -223,11 +226,11 @@ func TestErrorHandling(t *testing.T) {
 				}
 			}
 
-			var script *Script
+			var parsedScript *script.Script
 			var err error
 
 			if tt.scriptPath == "nonexistent.yaml" {
-				script, err = ParseScript(tt.scriptPath)
+				parsedScript, err = script.ParseScript(tt.scriptPath)
 				if !tt.expectError && err != nil {
 					t.Errorf("Unexpected error parsing script: %v", err)
 					return
@@ -240,15 +243,15 @@ func TestErrorHandling(t *testing.T) {
 					return
 				}
 			} else {
-				script, err = ParseScript(tt.scriptPath)
+				parsedScript, err = script.ParseScript(tt.scriptPath)
 				if err != nil {
 					t.Errorf("Failed to parse script: %v", err)
 					return
 				}
 			}
 
-			generator := NewHTMLGenerator()
-			err = generator.GeneratePresentation(script, tt.outputPath)
+			gen := generator.NewHTMLGenerator()
+			err = gen.GeneratePresentation(parsedScript, tt.outputPath)
 
 			if tt.expectError && err == nil {
 				t.Error("Expected error but got none")

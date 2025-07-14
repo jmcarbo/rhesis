@@ -25,7 +25,7 @@ Or clone and build:
 ```bash
 git clone https://github.com/jmcarbo/rhesis.git
 cd rhesis
-go build -o rhesis
+make build
 ```
 
 ## Prerequisites
@@ -42,13 +42,13 @@ go run github.com/playwright-community/playwright-go/cmd/playwright@latest insta
 
 ```bash
 # Generate HTML presentation
-./rhesis -script presentation.yaml -output presentation.html
+./bin/rhesis -script presentation.yaml -output presentation.html
 
 # Generate and play presentation
-./rhesis -script presentation.yaml -output presentation.html -play
+./bin/rhesis -script presentation.yaml -output presentation.html -play
 
 # Generate, play, and record presentation
-./rhesis -script presentation.yaml -output presentation.html -play -record video.webm
+./bin/rhesis -script presentation.yaml -output presentation.html -play -record video.webm
 ```
 
 ### Command Line Options
@@ -108,7 +108,31 @@ When playing a presentation in the browser:
 - **Play button**: Start/pause automatic playback
 - **Previous/Next buttons**: Manual navigation
 
-## Testing
+## Development
+
+### Building
+
+```bash
+# Build the application
+make build
+
+# Run tests
+make test
+
+# Run tests with coverage
+make test-coverage
+
+# Format code
+make fmt
+
+# Run linter (if available)
+make lint
+
+# Clean build artifacts
+make clean
+```
+
+### Testing
 
 Run the test suite:
 
@@ -118,14 +142,21 @@ go test -v -short
 
 # Run all tests including integration tests
 go test -v
+
+# Run tests with coverage
+make test-coverage
 ```
 
 ## Architecture
 
-- `main.go`: CLI interface and main application logic
-- `script.go`: YAML script parsing and validation
-- `generator.go`: HTML presentation generation with templates
-- `player.go`: Playwright integration for playback and recording
+The project follows standard Go project structure:
+
+- `cmd/rhesis/`: CLI application entry point
+- `internal/script/`: YAML script parsing and validation
+- `internal/generator/`: HTML presentation generation with templates
+- `internal/player/`: Playwright integration for playback and recording
+- `internal/version/`: Version information
+- `Makefile`: Build automation and development tasks
 
 ## License
 
