@@ -189,16 +189,35 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		speedFactor := videoDuration / audioDuration
 		fmt.Printf("Speed factor: %.4f (video will be slowed down to %.2f%% speed)\n", speedFactor, speedFactor*100)
 
-		// Use ffmpeg to adjust the video framerate/speed
-		adjustCmd := exec.Command(m.ffmpegPath,
+		// Determine output codec based on the file extension
+		adjustArgs := []string{
 			"-i", videoPath,
 			"-filter:v", fmt.Sprintf("setpts=%.4f*PTS", 1.0/speedFactor),
-			"-an",             // Remove audio track from the adjusted video
-			"-c:v", "libx264", // Re-encode video with H.264
-			"-preset", "fast",
-			"-crf", "23",
-			adjustedVideoPath,
-		)
+			"-an", // Remove audio track from the adjusted video
+		}
+		
+		// Choose codec based on output format
+		videoExt := strings.ToLower(filepath.Ext(videoPath))
+		if videoExt == ".webm" {
+			// Use VP8 for WebM files
+			adjustArgs = append(adjustArgs,
+				"-c:v", "libvpx",
+				"-b:v", "1M",
+				"-crf", "10",
+			)
+		} else {
+			// Use H.264 for MP4 and other formats
+			adjustArgs = append(adjustArgs,
+				"-c:v", "libx264",
+				"-preset", "fast",
+				"-crf", "23",
+			)
+		}
+		
+		adjustArgs = append(adjustArgs, adjustedVideoPath)
+		
+		// Use ffmpeg to adjust the video framerate/speed
+		adjustCmd := exec.Command(m.ffmpegPath, adjustArgs...)
 
 		adjustOutput, err := adjustCmd.CombinedOutput()
 		if err != nil {
@@ -281,7 +300,7 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		}
 	} else {
 		// Copy video codec if compatible
-		// Note: If we adjusted the framerate, the video is already H.264
+		// Note: If we adjusted the framerate, the video is already re-encoded with appropriate codec
 		args = append(args, "-c:v", "copy")
 	}
 
