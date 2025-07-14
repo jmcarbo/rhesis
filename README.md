@@ -1,10 +1,10 @@
 # Rhesis
 
-A Go program that reads a script and generates, plays, and records presentations in HTML with Playwright.
+A Go program that reads a Markdown script and generates, plays, and records presentations in HTML with Playwright.
 
 ## Features
 
-- **Script-based presentations**: Define slides with YAML scripts
+- **Markdown-based presentations**: Define slides with simple Markdown scripts
 - **HTML generation**: Creates beautiful HTML presentations with CSS styling
 - **Timing control**: Configurable slide durations for smooth transitions
 - **Transcription support**: Display explanatory text alongside each slide
@@ -42,16 +42,16 @@ go run github.com/playwright-community/playwright-go/cmd/playwright@latest insta
 
 ```bash
 # Generate HTML presentation
-./bin/rhesis -script presentation.yaml -output presentation.html
+./bin/rhesis -script presentation.md -output presentation.html
 
 # Generate and play presentation
-./bin/rhesis -script presentation.yaml -output presentation.html -play
+./bin/rhesis -script presentation.md -output presentation.html -play
 
 # Generate, play, and record presentation (WebM format)
-./bin/rhesis -script presentation.yaml -output presentation.html -play -record video.webm
+./bin/rhesis -script presentation.md -output presentation.html -play -record video.webm
 
 # Generate, play, and record presentation (MP4 format)
-./bin/rhesis -script presentation.yaml -output presentation.html -play -record video.mp4
+./bin/rhesis -script presentation.md -output presentation.html -play -record video.mp4
 ```
 
 ### Command Line Options
@@ -63,43 +63,128 @@ go run github.com/playwright-community/playwright-go/cmd/playwright@latest insta
 
 ## Script Format
 
-Scripts are written in YAML format:
+Scripts are written in Markdown format with a simple structure:
 
-```yaml
-title: "My Presentation"
-duration: 120              # Total duration in seconds (optional)
-default_time: 10           # Default slide duration in seconds (optional, default: 10)
-slides:
-  - title: "Welcome"
-    content: "Welcome to my presentation"
-    transcription: "This is the welcome slide where I introduce the topic..."
-    duration: 8            # Override default duration for this slide
-    image: "path/to/image.png"  # Optional image
-  
-  - title: "Main Content"
-    content: "Key points:\n• Point 1\n• Point 2\n• Point 3"
-    transcription: "In this slide, I'll cover the main points..."
-    duration: 15
+```markdown
+# Presentation Title
+
+Duration: 120              # Total duration in seconds (optional)
+Default time: 10           # Default slide duration in seconds (optional, default: 10)
+
+## Slide Title
+
+Duration: 15               # Override default duration for this slide
+
+This is the slide content. You can use **bold**, *italic*, and other Markdown formatting.
+
+- Bullet points
+- Work great too
+
+---
+
+This is the transcription text that appears in the side panel. 
+It provides additional context or narration for the slide.
+
+## Another Slide
+
+Image: path/to/image.png   # Optional image
+
+Code blocks are supported:
+
+` + "```python" + `
+def hello():
+    print("Hello, World!")
+` + "```" + `
+
+---
+
+Transcription for the second slide goes here.
 ```
 
-### Script Fields
+### Markdown Structure
 
-- `title`: Presentation title
-- `duration`: Total presentation duration (optional)
-- `default_time`: Default duration for slides without explicit duration
-- `slides`: Array of slide objects
+1. **Presentation Title**: Use a single H1 (`# Title`) for the presentation title
+2. **Metadata**: Place optional metadata after the title:
+   - `Duration: N` - Total presentation duration in seconds
+   - `Default time: N` - Default slide duration in seconds
+3. **Slides**: Each H2 (`## Slide Title`) starts a new slide
+4. **Slide Options**: Place these after the slide title:
+   - `Duration: N` - Override duration for this specific slide
+   - `Image: path/to/image` - Add an image to the slide
+5. **Content**: Everything after the slide options until `---` is slide content
+6. **Transcription**: Text after `---` until the next slide is the transcription
 
-### Slide Fields
+### Features
 
-- `title`: Slide title (required)
-- `content`: Main slide content (optional)
-- `transcription`: Explanatory text shown in transcription panel (optional)
-- `duration`: Slide duration in seconds (optional, uses default_time if not specified)
-- `image`: Path to image file (optional, supports PNG, JPG, GIF, WebP)
+- **Markdown Formatting**: Full support for Markdown in slide content
+- **Code Blocks**: Syntax-highlighted code blocks with language specification
+- **Lists**: Both ordered and unordered lists, including nested lists
+- **Images**: Embed images using the `Image:` directive
+- **Links**: Standard Markdown links are supported
+- **Blockquotes**: Use `>` for quotations
 
 ## Examples
 
-See `example.yaml` for a complete example presentation.
+See `example.md` for a complete example presentation about Go programming.
+
+### Simple Example
+
+```markdown
+# My First Presentation
+
+Default time: 8
+
+## Welcome
+
+Welcome to my presentation!
+
+---
+
+Thank you for joining me today. In this presentation, we'll explore...
+
+## Main Points
+
+Duration: 12
+
+- First important point
+- Second important point
+- Third important point
+
+---
+
+Let me elaborate on each of these points...
+```
+
+### Code-Heavy Presentation
+
+```markdown
+# Programming Workshop
+
+## Hello World Examples
+
+Duration: 15
+
+Let's compare Hello World in different languages:
+
+` + "```go" + `
+// Go
+package main
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, World!")
+}
+` + "```" + `
+
+` + "```python" + `
+# Python
+print("Hello, World!")
+` + "```" + `
+
+---
+
+Notice how Go requires more boilerplate but provides type safety...
+```
 
 ## Controls
 
@@ -125,10 +210,10 @@ The recording captures the entire presentation playback, including slide transit
 Example:
 ```bash
 # Record a presentation as WebM
-./bin/rhesis -script demo.yaml -play -record output/demo.webm
+./bin/rhesis -script demo.md -play -record output/demo.webm
 
 # Record a presentation as MP4
-./bin/rhesis -script demo.yaml -play -record output/demo.mp4
+./bin/rhesis -script demo.md -play -record output/demo.mp4
 ```
 
 ## Development
@@ -175,7 +260,7 @@ make test-coverage
 The project follows standard Go project structure:
 
 - `cmd/rhesis/`: CLI application entry point
-- `internal/script/`: YAML script parsing and validation
+- `internal/script/`: Markdown script parsing and validation
 - `internal/generator/`: HTML presentation generation with templates
 - `internal/player/`: Playwright integration for playback and recording
 - `internal/version/`: Version information
