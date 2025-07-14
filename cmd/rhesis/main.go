@@ -128,5 +128,35 @@ func main() {
 		if err := p.PlayPresentation(*outputPath, *recordPath); err != nil {
 			log.Fatalf("Failed to play presentation: %v", err)
 		}
+
+		// If both recording and sound were enabled, merge audio with video
+		if *recordPath != "" && *sound && len(audioFiles) > 0 {
+			fmt.Println("Merging audio with video recording...")
+			merger := audio.NewAudioVideoMerger()
+			
+			// Extract slide durations
+			durations := make([]int, len(parsedScript.Slides))
+			for i, slide := range parsedScript.Slides {
+				durations[i] = slide.Duration
+			}
+			
+			// Create output path for merged video
+			mergedPath := strings.TrimSuffix(*recordPath, filepath.Ext(*recordPath)) + "_with_audio" + filepath.Ext(*recordPath)
+			
+			if err := merger.MergeAudioWithVideo(*recordPath, audioFiles, durations, mergedPath); err != nil {
+				log.Printf("Warning: Failed to merge audio with video: %v", err)
+				log.Printf("Video saved without audio to: %s", *recordPath)
+			} else {
+				// Move merged video to original path
+				if err := os.Remove(*recordPath); err != nil {
+					log.Printf("Warning: Could not remove original video: %v", err)
+				} else if err := os.Rename(mergedPath, *recordPath); err != nil {
+					log.Printf("Warning: Could not rename merged video: %v", err)
+					fmt.Printf("Merged video saved to: %s\n", mergedPath)
+				} else {
+					fmt.Printf("Video with audio saved to: %s\n", *recordPath)
+				}
+			}
+		}
 	}
 }

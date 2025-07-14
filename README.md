@@ -37,6 +37,19 @@ For video recording functionality, you need to install Playwright browsers:
 go run github.com/playwright-community/playwright-go/cmd/playwright@latest install
 ```
 
+For audio/video merging when using `-sound` with `-record`, you need ffmpeg:
+
+```bash
+# macOS
+brew install ffmpeg
+
+# Ubuntu/Debian
+sudo apt-get install ffmpeg
+
+# Windows (using chocolatey)
+choco install ffmpeg
+```
+
 ## Usage
 
 ### Basic Usage
@@ -60,6 +73,9 @@ go run github.com/playwright-community/playwright-go/cmd/playwright@latest insta
 # Generate with audio using environment variable for API key
 export ELEVENLABS_API_KEY=your_api_key
 ./bin/rhesis -script presentation.md -output presentation.html -sound
+
+# Generate, play, and record with audio narration
+./bin/rhesis -script presentation.md -output presentation.html -sound -play -record video.mp4 -elevenlabs-key YOUR_API_KEY
 ```
 
 ### Command Line Options
@@ -140,11 +156,13 @@ When using the `-sound` flag, the tool will:
 1. Generate audio narration for each slide's transcription text using ElevenLabs API
 2. Automatically adjust slide duration if the audio is longer than the specified duration
 3. Play the audio synchronized with slide transitions during presentation playback
+4. When combined with `-record`, automatically merge the audio with the video recording using ffmpeg
 
 To use audio generation:
 - Sign up for an ElevenLabs account and get an API key
 - Set the API key via `-elevenlabs-key` flag or `ELEVENLABS_API_KEY` environment variable
 - Optionally specify a voice ID with `-voice` flag (defaults to Rachel voice)
+- Install ffmpeg if you want to record videos with audio narration
 
 ## Examples
 
