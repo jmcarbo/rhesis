@@ -172,9 +172,12 @@ func main() {
 
 			// Extract slide durations
 			durations := make([]int, len(parsedScript.Slides))
+			totalExpectedDuration := 0
 			for i, slide := range parsedScript.Slides {
 				durations[i] = slide.Duration
+				totalExpectedDuration += slide.Duration
 			}
+			fmt.Printf("Expected total duration: %d seconds\n", totalExpectedDuration)
 
 			// Create output path for merged video
 			mergedPath := strings.TrimSuffix(*recordPath, filepath.Ext(*recordPath)) + "_with_audio" + filepath.Ext(*recordPath)

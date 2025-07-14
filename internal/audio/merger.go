@@ -170,6 +170,12 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 	delay := videoDuration - audioDuration
 	fmt.Printf("Video duration: %.2fs, Audio duration: %.2fs, Delay: %.2fs\n", videoDuration, audioDuration, delay)
 
+	if delay < -1.0 {
+		// Video is significantly shorter than audio - this indicates a problem
+		fmt.Printf("WARNING: Video is %.2fs shorter than expected audio duration!\n", -delay)
+		fmt.Printf("This usually means the video recording was truncated or stopped early.\n")
+	}
+
 	// First, detect the input video codec
 	probeCmd := exec.Command(m.ffmpegPath, "-i", videoPath)
 	probeOutput, _ := probeCmd.CombinedOutput()
@@ -250,12 +256,25 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		args = append(args, "-c:a", "aac", "-b:a", "192k") // Default to AAC
 	}
 
-	args = append(args,
-		"-map", "0:v:0", // Map video from first input
-		"-map", "1:a:0", // Map audio from second input
-		"-shortest", // End output when shortest input ends
-		outputPath,
-	)
+	// For negative delays (video shorter than audio), we have a problem
+	// The video recording was likely truncated
+	if delay < -1.0 {
+		// Don't use -shortest, instead specify exact duration
+		args = append(args,
+			"-map", "0:v:0", // Map video from first input
+			"-map", "1:a:0", // Map audio from second input
+			"-t", fmt.Sprintf("%.3f", videoDuration), // Use video duration
+			outputPath,
+		)
+		fmt.Printf("Using video duration (%.2fs) as output duration\n", videoDuration)
+	} else {
+		args = append(args,
+			"-map", "0:v:0", // Map video from first input
+			"-map", "1:a:0", // Map audio from second input
+			"-shortest", // End output when shortest input ends
+			outputPath,
+		)
+	}
 
 	cmd := exec.Command(m.ffmpegPath, args...)
 	output, err := cmd.CombinedOutput()
