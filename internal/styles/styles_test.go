@@ -12,11 +12,11 @@ func TestNewStyleManager(t *testing.T) {
 	if sm == nil {
 		t.Error("Expected StyleManager to be created")
 	}
-	
+
 	// Check that default themes are loaded
 	themes := sm.GetAvailableThemes()
 	expectedThemes := []string{"modern", "minimal", "dark", "elegant"}
-	
+
 	if len(themes) != len(expectedThemes) {
 		t.Errorf("Expected %d themes, got %d", len(expectedThemes), len(themes))
 	}
@@ -24,7 +24,7 @@ func TestNewStyleManager(t *testing.T) {
 
 func TestGetStyle(t *testing.T) {
 	sm := NewStyleManager()
-	
+
 	tests := []struct {
 		name      string
 		themeName string
@@ -62,7 +62,7 @@ func TestGetStyle(t *testing.T) {
 			contains:  "Modern Theme",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			css, err := sm.GetStyle(tt.themeName)
@@ -87,17 +87,17 @@ func TestGetStyleFromFile(t *testing.T) {
 body {
     background: #custom;
 }`
-	
+
 	if err := os.WriteFile(cssFile, []byte(customCSS), 0644); err != nil {
 		t.Fatalf("Failed to create test CSS file: %v", err)
 	}
-	
+
 	sm := NewStyleManager()
 	css, err := sm.GetStyle(cssFile)
 	if err != nil {
 		t.Errorf("Failed to get style from file: %v", err)
 	}
-	
+
 	if css != customCSS {
 		t.Error("Expected custom CSS content")
 	}
@@ -108,28 +108,28 @@ func TestLoadCustomTheme(t *testing.T) {
 	tmpDir := t.TempDir()
 	cssFile := filepath.Join(tmpDir, "custom.css")
 	customCSS := `/* My Custom Theme */`
-	
+
 	if err := os.WriteFile(cssFile, []byte(customCSS), 0644); err != nil {
 		t.Fatalf("Failed to create test CSS file: %v", err)
 	}
-	
+
 	sm := NewStyleManager()
-	
+
 	// Load the custom theme
 	if err := sm.LoadCustomTheme("mycustom", cssFile); err != nil {
 		t.Errorf("Failed to load custom theme: %v", err)
 	}
-	
+
 	// Verify it was loaded
 	css, err := sm.GetStyle("mycustom")
 	if err != nil {
 		t.Errorf("Failed to get loaded custom theme: %v", err)
 	}
-	
+
 	if css != customCSS {
 		t.Error("Expected custom theme content to match")
 	}
-	
+
 	// Check it appears in available themes
 	themes := sm.GetAvailableThemes()
 	found := false

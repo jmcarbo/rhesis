@@ -226,6 +226,23 @@ body {
 .line { display: block; }  /* Line wrapper */
 .cl { display: block; }  /* CodeLine wrapper */
 
+/* D2 Diagrams */
+.d2-diagram {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.d2-diagram img {
+    max-width: 90%;
+    max-height: 60vh;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    background: #ffffff;
+    padding: 20px;
+}
+
 .slide img {
     max-width: 90%;
     max-height: 60vh;

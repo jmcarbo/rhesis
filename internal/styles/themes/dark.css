@@ -211,6 +211,43 @@ body {
 .line { display: block; }  /* Line wrapper */
 .cl { display: block; }  /* CodeLine wrapper */
 
+/* D2 diagram styling */
+.slide .d2-diagram {
+    background: #0d0d0d;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    padding: 30px;
+    margin: 25px auto;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    max-width: 90%;
+    overflow: auto;
+}
+
+.slide .d2-diagram svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.slide .d2-diagram text {
+    fill: #cccccc;
+}
+
+.slide .d2-diagram .d2-shape {
+    fill: #1a1a1a;
+    stroke: #00ff88;
+}
+
+.slide .d2-diagram .d2-arrow {
+    stroke: #00ff88;
+    fill: #00ff88;
+}
+
+.slide .d2-diagram .d2-connection {
+    stroke: #00ff88;
+}
+
 .slide img {
     max-width: 88%;
     max-height: 62vh;

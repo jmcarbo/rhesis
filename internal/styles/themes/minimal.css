@@ -211,6 +211,22 @@ body {
 .line { display: block; }  /* Line wrapper */
 .cl { display: block; }  /* CodeLine wrapper */
 
+/* D2 Diagrams */
+.d2-diagram {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.d2-diagram img {
+    max-width: 85%;
+    max-height: 65vh;
+    border: 1px solid #ddd;
+    background: #ffffff;
+    padding: 15px;
+}
+
 .slide img {
     max-width: 85%;
     max-height: 65vh;
