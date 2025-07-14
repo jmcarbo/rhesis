@@ -64,26 +64,26 @@ func (m *AudioVideoMerger) createTimedAudioTrack(audioFiles []string, slideDurat
 	var filterParts []string
 	var inputs []string
 	inputIndex := 0
-	
+
 	for i, duration := range slideDurations {
 		if i < len(audioFiles) && audioFiles[i] != "" {
 			// Add the audio file as input
 			inputs = append(inputs, "-i", audioFiles[i])
-			
+
 			// Add silence padding if needed
 			audioDuration, err := GetAudioDuration(audioFiles[i])
 			if err != nil {
 				// If we can't get duration, use the slide duration
 				audioDuration = time.Duration(duration) * time.Second
 			}
-			
+
 			audioSeconds := audioDuration.Seconds()
 			slideSeconds := float64(duration)
-			
+
 			if audioSeconds < slideSeconds {
 				// Need to add silence after the audio
 				silenceDuration := slideSeconds - audioSeconds
-				filterParts = append(filterParts, 
+				filterParts = append(filterParts,
 					fmt.Sprintf("[%d:a]apad=pad_dur=%.3f[a%d]", inputIndex, silenceDuration, i))
 			} else {
 				// Audio is longer or equal, just reference it
@@ -96,16 +96,16 @@ func (m *AudioVideoMerger) createTimedAudioTrack(audioFiles []string, slideDurat
 				fmt.Sprintf("anullsrc=duration=%d:sample_rate=44100:channel_layout=stereo[a%d]", duration, i))
 		}
 	}
-	
+
 	// Concatenate all audio segments
 	var concatInputs []string
 	for i := range slideDurations {
 		concatInputs = append(concatInputs, fmt.Sprintf("[a%d]", i))
 	}
-	
+
 	filterComplex := strings.Join(filterParts, ";") + ";" +
 		strings.Join(concatInputs, "") + fmt.Sprintf("concat=n=%d:v=0:a=1[out]", len(slideDurations))
-	
+
 	// Build ffmpeg command
 	args := []string{"-y"} // Overwrite output
 	args = append(args, inputs...)
@@ -114,49 +114,102 @@ func (m *AudioVideoMerger) createTimedAudioTrack(audioFiles []string, slideDurat
 	args = append(args, "-codec:a", "libmp3lame")
 	args = append(args, "-b:a", "192k")
 	args = append(args, outputPath)
-	
+
 	cmd := exec.Command(m.ffmpegPath, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("ffmpeg audio concatenation failed: %w\nOutput: %s", err, string(output))
 	}
-	
+
 	return nil
 }
 
 // mergeFiles merges the audio track with the video file
 func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) error {
+	// First, detect the input video codec
+	probeCmd := exec.Command(m.ffmpegPath, "-i", videoPath)
+	probeOutput, _ := probeCmd.CombinedOutput()
+	probeStr := string(probeOutput)
+	
 	// Determine output format based on file extension
-	ext := strings.ToLower(filepath.Ext(outputPath))
+	outputExt := strings.ToLower(filepath.Ext(outputPath))
+	inputExt := strings.ToLower(filepath.Ext(videoPath))
+	
+	// Check the actual video codec in the input file
+	isVP8Input := strings.Contains(probeStr, "Video: vp8") || strings.Contains(probeStr, "Video: vp9")
+	isH264Input := strings.Contains(probeStr, "Video: h264")
+	
+	// Debug: log detected codec
+	if isVP8Input {
+		fmt.Printf("Detected VP8/VP9 video codec in input file\n")
+	} else if isH264Input {
+		fmt.Printf("Detected H.264 video codec in input file\n")
+	}
+	
+	// Determine if we need to transcode based on codec compatibility
+	needsTranscode := false
+	if outputExt == ".mp4" && (isVP8Input || (!isH264Input && inputExt == ".webm")) {
+		needsTranscode = true
+		fmt.Printf("Transcoding required: VP8/WebM to MP4\n")
+	} else if outputExt == ".webm" && isH264Input {
+		needsTranscode = true
+		fmt.Printf("Transcoding required: H.264 to WebM\n")
+	}
 	
 	args := []string{
 		"-y", // Overwrite output
 		"-i", videoPath,
 		"-i", audioPath,
-		"-c:v", "copy", // Copy video codec
-		"-c:a", "aac",  // Use AAC for audio (compatible with most formats)
-		"-b:a", "192k",
+	}
+	
+	// Handle video codec
+	if needsTranscode {
+		if outputExt == ".mp4" {
+			// Transcode to H.264 for MP4
+			args = append(args, 
+				"-c:v", "libx264",
+				"-preset", "fast",
+				"-crf", "23", // Good quality
+			)
+		} else if outputExt == ".webm" {
+			// Transcode to VP8 for WebM
+			args = append(args,
+				"-c:v", "libvpx",
+				"-b:v", "1M",
+				"-crf", "10",
+			)
+		}
+	} else {
+		// Copy video codec if compatible
+		args = append(args, "-c:v", "copy")
+	}
+	
+	// Audio codec based on output format
+	switch outputExt {
+	case ".mp4":
+		args = append(args, "-c:a", "aac", "-b:a", "192k")
+		if !needsTranscode {
+			args = append(args, "-movflags", "+faststart") // Optimize for streaming
+		}
+	case ".webm":
+		args = append(args, "-c:a", "libopus", "-b:a", "128k")
+	default:
+		args = append(args, "-c:a", "aac", "-b:a", "192k") // Default to AAC
+	}
+	
+	args = append(args,
 		"-map", "0:v:0", // Map video from first input
 		"-map", "1:a:0", // Map audio from second input
 		"-shortest",     // End output when shortest input ends
-	}
-	
-	// Add format-specific options
-	switch ext {
-	case ".mp4":
-		args = append(args, "-movflags", "+faststart") // Optimize for streaming
-	case ".webm":
-		args = append(args, "-c:a", "libopus") // Use Opus for WebM
-	}
-	
-	args = append(args, outputPath)
-	
+		outputPath,
+	)
+
 	cmd := exec.Command(m.ffmpegPath, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("ffmpeg merge failed: %w\nOutput: %s", err, string(output))
 	}
-	
+
 	// Remove the original video file and rename the merged one
 	tempOutput := outputPath + ".tmp"
 	if err := os.Rename(outputPath, tempOutput); err != nil {
@@ -164,18 +217,18 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		fmt.Printf("Warning: Could not create temporary file: %v\n", err)
 		return nil
 	}
-	
+
 	// Remove original video
 	if err := os.Remove(videoPath); err != nil {
 		fmt.Printf("Warning: Could not remove original video: %v\n", err)
 	}
-	
+
 	// Rename merged file to original video path
 	if err := os.Rename(tempOutput, videoPath); err != nil {
 		// Try to recover
 		os.Rename(tempOutput, outputPath)
 		return fmt.Errorf("failed to finalize merged video: %w", err)
 	}
-	
+
 	return nil
 }
