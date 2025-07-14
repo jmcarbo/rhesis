@@ -130,22 +130,22 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 	probeCmd := exec.Command(m.ffmpegPath, "-i", videoPath)
 	probeOutput, _ := probeCmd.CombinedOutput()
 	probeStr := string(probeOutput)
-	
+
 	// Determine output format based on file extension
 	outputExt := strings.ToLower(filepath.Ext(outputPath))
 	inputExt := strings.ToLower(filepath.Ext(videoPath))
-	
+
 	// Check the actual video codec in the input file
 	isVP8Input := strings.Contains(probeStr, "Video: vp8") || strings.Contains(probeStr, "Video: vp9")
 	isH264Input := strings.Contains(probeStr, "Video: h264")
-	
+
 	// Debug: log detected codec
 	if isVP8Input {
 		fmt.Printf("Detected VP8/VP9 video codec in input file\n")
 	} else if isH264Input {
 		fmt.Printf("Detected H.264 video codec in input file\n")
 	}
-	
+
 	// Determine if we need to transcode based on codec compatibility
 	needsTranscode := false
 	if outputExt == ".mp4" && (isVP8Input || (!isH264Input && inputExt == ".webm")) {
@@ -155,18 +155,18 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		needsTranscode = true
 		fmt.Printf("Transcoding required: H.264 to WebM\n")
 	}
-	
+
 	args := []string{
 		"-y", // Overwrite output
 		"-i", videoPath,
 		"-i", audioPath,
 	}
-	
+
 	// Handle video codec
 	if needsTranscode {
 		if outputExt == ".mp4" {
 			// Transcode to H.264 for MP4
-			args = append(args, 
+			args = append(args,
 				"-c:v", "libx264",
 				"-preset", "fast",
 				"-crf", "23", // Good quality
@@ -183,7 +183,7 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		// Copy video codec if compatible
 		args = append(args, "-c:v", "copy")
 	}
-	
+
 	// Audio codec based on output format
 	switch outputExt {
 	case ".mp4":
@@ -196,11 +196,11 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 	default:
 		args = append(args, "-c:a", "aac", "-b:a", "192k") // Default to AAC
 	}
-	
+
 	args = append(args,
 		"-map", "0:v:0", // Map video from first input
 		"-map", "1:a:0", // Map audio from second input
-		"-shortest",     // End output when shortest input ends
+		"-shortest", // End output when shortest input ends
 		outputPath,
 	)
 
@@ -210,25 +210,7 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		return fmt.Errorf("ffmpeg merge failed: %w\nOutput: %s", err, string(output))
 	}
 
-	// Remove the original video file and rename the merged one
-	tempOutput := outputPath + ".tmp"
-	if err := os.Rename(outputPath, tempOutput); err != nil {
-		// If rename fails, we've already created the merged file, so just log a warning
-		fmt.Printf("Warning: Could not create temporary file: %v\n", err)
-		return nil
-	}
-
-	// Remove original video
-	if err := os.Remove(videoPath); err != nil {
-		fmt.Printf("Warning: Could not remove original video: %v\n", err)
-	}
-
-	// Rename merged file to original video path
-	if err := os.Rename(tempOutput, videoPath); err != nil {
-		// Try to recover
-		os.Rename(tempOutput, outputPath)
-		return fmt.Errorf("failed to finalize merged video: %w", err)
-	}
-
+	// The merged file is created at outputPath
+	// The caller (main.go) will handle any file renaming if needed
 	return nil
 }
