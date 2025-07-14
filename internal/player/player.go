@@ -2,6 +2,7 @@ package player
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -9,9 +10,11 @@ import (
 )
 
 type PresentationPlayer struct {
-	pw      *playwright.Playwright
-	browser playwright.Browser
-	page    playwright.Page
+	pw         *playwright.Playwright
+	browser    playwright.Browser
+	context    playwright.BrowserContext
+	page       playwright.Page
+	recordPath string
 }
 
 func NewPresentationPlayer() *PresentationPlayer {
@@ -19,6 +22,8 @@ func NewPresentationPlayer() *PresentationPlayer {
 }
 
 func (p *PresentationPlayer) PlayPresentation(htmlPath, recordPath string) error {
+	p.recordPath = recordPath
+
 	if err := p.initialize(); err != nil {
 		return fmt.Errorf("failed to initialize player: %w", err)
 	}
@@ -39,20 +44,8 @@ func (p *PresentationPlayer) PlayPresentation(htmlPath, recordPath string) error
 		return fmt.Errorf("failed to wait for presentation ready: %w", err)
 	}
 
-	if recordPath != "" {
-		if err := p.startRecording(recordPath); err != nil {
-			return fmt.Errorf("failed to start recording: %w", err)
-		}
-	}
-
 	if err := p.playPresentation(); err != nil {
 		return fmt.Errorf("failed to play presentation: %w", err)
-	}
-
-	if recordPath != "" {
-		if err := p.stopRecording(); err != nil {
-			return fmt.Errorf("failed to stop recording: %w", err)
-		}
 	}
 
 	return nil
@@ -78,15 +71,29 @@ func (p *PresentationPlayer) initialize() error {
 	}
 	p.browser = browser
 
-	context, err := browser.NewContext(playwright.BrowserNewContextOptions{
+	contextOptions := playwright.BrowserNewContextOptions{
 		Viewport: &playwright.Size{
 			Width:  1920,
 			Height: 1080,
 		},
-	})
+	}
+
+	// Enable video recording if record path is specified
+	if p.recordPath != "" {
+		contextOptions.RecordVideo = &playwright.RecordVideo{
+			Dir: filepath.Dir(p.recordPath),
+			Size: &playwright.Size{
+				Width:  1920,
+				Height: 1080,
+			},
+		}
+	}
+
+	context, err := browser.NewContext(contextOptions)
 	if err != nil {
 		return err
 	}
+	p.context = context
 
 	page, err := context.NewPage()
 	if err != nil {
@@ -98,9 +105,52 @@ func (p *PresentationPlayer) initialize() error {
 }
 
 func (p *PresentationPlayer) cleanup() {
+	// Save video if recording was enabled
+	if p.recordPath != "" && p.page != nil {
+		video := p.page.Video()
+		if video != nil {
+			// Get the actual video path from the page
+			videoPath, err := video.Path()
+			if err != nil {
+				fmt.Printf("Warning: failed to get video path: %v\n", err)
+				return
+			}
+
+			// Close the page to finalize the video
+			p.page.Close()
+			p.page = nil
+
+			// Close context to ensure video is saved
+			if p.context != nil {
+				p.context.Close()
+				p.context = nil
+			}
+
+			// Wait a moment for video to be written
+			time.Sleep(500 * time.Millisecond)
+
+			// Move video from temporary location to desired path
+			if videoPath != "" && videoPath != p.recordPath {
+				if err := os.Rename(videoPath, p.recordPath); err != nil {
+					// Try copying if rename fails (e.g., across filesystems)
+					if err := copyFile(videoPath, p.recordPath); err != nil {
+						fmt.Printf("Warning: failed to save video to %s: %v\n", p.recordPath, err)
+					}
+				}
+			}
+		}
+	}
+
+	// Close page if not already closed
 	if p.page != nil {
 		p.page.Close()
 	}
+
+	// Close context if not already closed
+	if p.context != nil {
+		p.context.Close()
+	}
+
 	if p.browser != nil {
 		p.browser.Close()
 	}
@@ -109,14 +159,22 @@ func (p *PresentationPlayer) cleanup() {
 	}
 }
 
-func (p *PresentationPlayer) startRecording(recordPath string) error {
-	// Recording is not supported in the current implementation
-	// This would require setting up video recording during context creation
-	return nil
-}
+// copyFile copies a file from src to dst
+func copyFile(src, dst string) error {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
 
-func (p *PresentationPlayer) stopRecording() error {
-	return nil
+	destFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	_, err = destFile.ReadFrom(sourceFile)
+	return err
 }
 
 func (p *PresentationPlayer) playPresentation() error {
@@ -135,7 +193,9 @@ func (p *PresentationPlayer) playPresentation() error {
 			return err
 		}
 
-		if !isPlaying.(bool) {
+		// Handle case where isPlaying might be nil or not a bool
+		playing, ok := isPlaying.(bool)
+		if !ok || !playing {
 			break
 		}
 
