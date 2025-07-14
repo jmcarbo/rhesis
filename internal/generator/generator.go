@@ -228,6 +228,12 @@ const htmlTemplate = `<!DOCTYPE html>
             transform: translateX(-50%);
             display: flex;
             gap: 10px;
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .controls.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
         .btn {
             background: #3498db;
@@ -356,6 +362,10 @@ const htmlTemplate = `<!DOCTYPE html>
             startTime = Date.now();
             playBtn.textContent = 'Pause';
             
+            // Hide controls during automatic playback
+            const controls = document.querySelector('.controls');
+            controls.classList.add('hidden');
+            
             function advanceSlide() {
                 if (!isPlaying) return;
                 
@@ -389,6 +399,10 @@ const htmlTemplate = `<!DOCTYPE html>
                 clearTimeout(slideTimer);
                 slideTimer = null;
             }
+            
+            // Show controls when playback stops
+            const controls = document.querySelector('.controls');
+            controls.classList.remove('hidden');
         }
         
         function updateProgress() {
