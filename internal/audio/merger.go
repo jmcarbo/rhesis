@@ -92,6 +92,8 @@ func (m *AudioVideoMerger) createTimedAudioTrack(audioFiles []string, slideDurat
 					fmt.Sprintf("[%d:a]apad=pad_dur=%.3f[a%d]", inputIndex, silenceDuration, i))
 			} else if audioSeconds > slideSeconds {
 				// Audio is longer than slide, trim it to match slide duration
+				fmt.Printf("  WARNING: Audio (%.2fs) is longer than slide duration (%.2fs)\n", audioSeconds, slideSeconds)
+				fmt.Printf("  This should not happen if slide durations were adjusted properly!\n")
 				fmt.Printf("  Trimming audio to %.2fs\n", slideSeconds)
 				filterParts = append(filterParts,
 					fmt.Sprintf("[%d:a]atrim=0:%.3f,asetpts=PTS-STARTPTS[a%d]", inputIndex, slideSeconds, i))
@@ -198,16 +200,18 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		fmt.Printf("Transcoding required: H.264 to WebM\n")
 	}
 
-	args := []string{
-		"-y", // Overwrite output
-		"-i", videoPath,
-	}
+	// Determine how to handle the sync
+	args := []string{"-y"} // Overwrite output
 
-	// Add audio with delay if needed
-	if delay > 0.5 { // Only add delay if it's significant
-		// Add silence at the beginning of audio
-		args = append(args, "-itsoffset", fmt.Sprintf("%.3f", delay), "-i", audioPath)
+	if delay > 0.5 { // If there's significant delay, trim the video start
+		// Trim the beginning of the video to match when audio should start
+		args = append(args, "-ss", fmt.Sprintf("%.3f", delay))
+		args = append(args, "-i", videoPath)
+		args = append(args, "-i", audioPath)
+		fmt.Printf("Trimming %.2fs from video start to sync with audio\n", delay)
 	} else {
+		// No significant delay, use files as-is
+		args = append(args, "-i", videoPath)
 		args = append(args, "-i", audioPath)
 	}
 
