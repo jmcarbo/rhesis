@@ -455,6 +455,28 @@ body {
     font-weight: 600 !important;
 }
 
+/* D2 diagram styling */
+.d2-diagram {
+    max-width: 85%;
+    max-height: 65vh;
+    margin: 25px auto;
+    display: block;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.d2-error {
+    background: #f5f5f5;
+    border: 1px solid #d14;
+    border-radius: 3px;
+    padding: 20px;
+    margin: 25px auto;
+    max-width: 85%;
+    color: #d14;
+    font-family: 'SF Mono', Consolas, Monaco, monospace;
+    font-size: 0.9em;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .presentation-container {

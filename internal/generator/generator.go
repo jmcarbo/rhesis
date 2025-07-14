@@ -8,14 +8,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/jmcarbo/rhesis/internal/d2renderer"
 	"github.com/jmcarbo/rhesis/internal/script"
 	"github.com/jmcarbo/rhesis/internal/styles"
 	"github.com/yuin/goldmark"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
-	highlighting "github.com/yuin/goldmark-highlighting/v2"
-	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"go.abhg.dev/goldmark/mermaid"
 )
 
@@ -35,21 +36,37 @@ func NewHTMLGenerator() *HTMLGenerator {
 		},
 	})
 
-	md := goldmark.New(
-		goldmark.WithExtensions(
-			extension.GFM,
-			extension.Table,
-			extension.Strikethrough,
-			extension.TaskList,
-			highlighting.NewHighlighting(
-				highlighting.WithStyle("monokai"),
-				highlighting.WithFormatOptions(
-					chromahtml.WithClasses(true),
-					chromahtml.WithLineNumbers(false),
-				),
+	// Create D2 extension
+	d2Ext, err := d2renderer.NewD2Extension()
+	if err != nil {
+		// If D2 extension fails to initialize, continue without it
+		fmt.Printf("Warning: D2 extension could not be initialized: %v\n", err)
+		d2Ext = nil
+	}
+
+	// Build list of extensions
+	extensions := []goldmark.Extender{
+		extension.GFM,
+		extension.Table,
+		extension.Strikethrough,
+		extension.TaskList,
+		highlighting.NewHighlighting(
+			highlighting.WithStyle("monokai"),
+			highlighting.WithFormatOptions(
+				chromahtml.WithClasses(true),
+				chromahtml.WithLineNumbers(false),
 			),
-			&mermaid.Extender{},
 		),
+		&mermaid.Extender{},
+	}
+
+	// Add D2 extension if available
+	if d2Ext != nil {
+		extensions = append(extensions, d2Ext)
+	}
+
+	md := goldmark.New(
+		goldmark.WithExtensions(extensions...),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),
 		),

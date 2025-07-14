@@ -475,6 +475,27 @@ body {
     font-weight: 600 !important;
 }
 
+/* D2 diagram styling */
+.d2-diagram {
+    max-width: 90%;
+    max-height: 60vh;
+    margin: 20px auto;
+    display: block;
+    filter: invert(1) hue-rotate(180deg);
+}
+
+.d2-error {
+    background: rgba(255, 85, 85, 0.1);
+    border: 1px solid #ff5555;
+    border-radius: 4px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 90%;
+    color: #ff5555;
+    font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+    font-size: 0.9em;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .presentation-container {

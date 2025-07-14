@@ -111,6 +111,194 @@ sequenceDiagram
 
 One of Go's most powerful features is its concurrency model. Goroutines are lightweight threads that can run concurrently with your main program. You start a goroutine by using the 'go' keyword before a function call. Channels are used to communicate between goroutines safely. In this example, we're creating a goroutine that sends a message through a channel, and then we receive that message in the main goroutine.
 
+## D2 Diagram: Network Architecture
+
+Duration: 10
+
+```d2
+network: {
+  cell tower: {
+    shape: cylinder
+  }
+  
+  phone: {
+    shape: rectangle
+    style.3d: true
+  }
+  
+  laptop: {
+    shape: rectangle  
+    style.3d: true
+  }
+  
+  server: {
+    shape: cylinder
+  }
+  
+  cell tower -> phone: 4G/5G
+  phone -> server: API calls
+  laptop -> server: HTTPS
+  server -> database: SQL
+  
+  database: {
+    shape: cylinder
+  }
+}
+```
+
+---
+
+D2 is a modern diagram scripting language that turns text to diagrams. It stands for Declarative Diagramming. Here we see a simple network architecture diagram showing how different components connect to each other. D2 makes it easy to create professional-looking diagrams with just a few lines of code.
+
+## D2 Diagram: Software Architecture
+
+Duration: 12
+
+```d2
+direction: right
+
+Frontend: {
+  shape: rectangle
+  style.fill: "#4287f5"
+  
+  React: "React App"
+  Redux: "State Management"
+  
+  React -> Redux
+}
+
+API Gateway: {
+  shape: hexagon
+  style.fill: "#42f554"
+  style.3d: true
+  
+  Auth: "Authentication"
+  Rate Limiter: "Rate Limiting"
+  
+  Auth -> Rate Limiter
+}
+
+Backend: {
+  shape: rectangle
+  style.fill: "#f54242"
+  
+  Services: {
+    User Service
+    Order Service
+    Payment Service
+  }
+}
+
+Storage: {
+  shape: cylinder
+  style.multiple: true
+  
+  PostgreSQL
+  Redis Cache
+  S3 Bucket
+}
+
+Frontend -> API Gateway: "HTTPS/REST"
+API Gateway -> Backend: "gRPC"
+Backend -> Storage: "Queries"
+```
+
+---
+
+This D2 diagram illustrates a typical microservices architecture. The frontend communicates with an API Gateway, which handles authentication and rate limiting. The backend consists of multiple services that interact with various storage solutions. D2's declarative syntax makes it easy to express complex architectural relationships.
+
+## D2 Diagram: State Machine
+
+Duration: 10
+
+```d2
+Start: {shape: circle}
+Processing: {shape: rectangle}
+Success: {shape: hexagon; style.fill: "#90EE90"; style.3d: true}
+Error: {shape: hexagon; style.fill: "#FFB6C1"; style.3d: true}
+End: {shape: circle; style.multiple: true}
+
+Start -> Processing: "Initialize"
+Processing -> Success: "Valid Data"
+Processing -> Error: "Invalid Data"
+Success -> End: "Complete"
+Error -> Processing: "Retry"
+Error -> End: "Max Retries"
+
+Validate: "Validate Data" {shape: rectangle}
+Transform: "Transform Data" {shape: rectangle}
+Save: "Save to DB" {shape: rectangle}
+
+Processing -> Validate: "step 1"
+Validate -> Transform: "step 2"
+Transform -> Save: "step 3"
+```
+
+---
+
+State machines are perfect for modeling workflows and processes. This D2 diagram shows a data processing pipeline with error handling and retry logic. The visual representation makes it easy to understand the flow and identify potential issues in the system design.
+
+## D2 Diagram: Class Relationships
+
+Duration: 10
+
+```d2
+# Class diagram for a blog system
+
+User: {
+  shape: class
+  id: "int"
+  username: "string"
+  email: "string"
+  created_at: "datetime"
+  
+  login(): "bool"
+  logout(): "void"
+  updateProfile(): "void"
+}
+
+Post: {
+  shape: class
+  id: "int"
+  title: "string"  
+  content: "text"
+  published: "bool"
+  created_at: "datetime"
+  
+  publish(): "void"
+  archive(): "void"
+  addComment(): "void"
+}
+
+Comment: {
+  shape: class
+  id: "int"
+  content: "text"
+  created_at: "datetime"
+  
+  edit(): "void"
+  delete(): "void"
+}
+
+Category: {
+  shape: class
+  id: "int"
+  name: "string"
+  slug: "string"
+  
+  getPosts(): "[]Post"
+}
+
+User -> Post: "writes\n1..*"
+User -> Comment: "creates\n1..*"
+Post -> Comment: "has\n1..*"
+Post -> Category: "belongs to\n*..*"
+```
+
+---
+
+D2 can create UML-style class diagrams to document object-oriented designs. This example shows a blog system with relationships between Users, Posts, Comments, and Categories. The diagram clearly illustrates the cardinality and nature of relationships between entities.
+
 ## Thank You!
 
 Duration: 8

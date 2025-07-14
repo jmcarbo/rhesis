@@ -495,6 +495,29 @@ body {
     font-weight: 600 !important;
 }
 
+/* D2 diagram styling */
+.d2-diagram {
+    max-width: 85%;
+    max-height: 60vh;
+    margin: 30px auto;
+    display: block;
+    border: 1px solid #e0dbd3;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.d2-error {
+    background: rgba(215, 53, 2, 0.05);
+    border: 1px solid #d73502;
+    border-radius: 6px;
+    padding: 25px;
+    margin: 30px auto;
+    max-width: 85%;
+    color: #d73502;
+    font-family: 'IBM Plex Mono', Consolas, Monaco, monospace;
+    font-size: 0.92em;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .presentation-container {
