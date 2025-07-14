@@ -76,6 +76,9 @@ export ELEVENLABS_API_KEY=your_api_key
 
 # Generate, play, and record with audio narration
 ./bin/rhesis -script presentation.md -output presentation.html -sound -play -record video.mp4 -elevenlabs-key YOUR_API_KEY
+
+# Reuse existing audio files (skip generation)
+./bin/rhesis -script presentation.md -output presentation.html -sound -skip-audio-creation -play
 ```
 
 ### Command Line Options
@@ -85,6 +88,7 @@ export ELEVENLABS_API_KEY=your_api_key
 - `-play`: Play the presentation after generating (optional)
 - `-record`: Path to save video recording (optional, requires -play)
 - `-sound`: Generate audio narration from transcriptions using ElevenLabs (optional)
+- `-skip-audio-creation`: Skip audio generation if audio files already exist (optional, use with -sound)
 - `-elevenlabs-key`: ElevenLabs API key (optional, can also use ELEVENLABS_API_KEY env var)
 - `-voice`: ElevenLabs voice ID (optional, defaults to Rachel voice)
 
