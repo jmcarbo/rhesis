@@ -45,7 +45,7 @@ func TestGeneratePresentation(t *testing.T) {
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Close()
 
-	err = generator.GeneratePresentation(testScript, tmpFile.Name())
+	err = generator.GeneratePresentation(testScript, tmpFile.Name(), "modern")
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 		return
@@ -70,11 +70,11 @@ func TestGeneratePresentation(t *testing.T) {
 		t.Error("Expected slide 2 title in HTML")
 	}
 
-	if !strings.Contains(html, "Content 1") {
+	if !strings.Contains(html, "Content 1") && !strings.Contains(html, "<p>Content 1</p>") {
 		t.Error("Expected slide 1 content in HTML")
 	}
 
-	if !strings.Contains(html, "Transcription 1") {
+	if !strings.Contains(html, "Transcription 1") && !strings.Contains(html, "<p>Transcription 1</p>") {
 		t.Error("Expected slide 1 transcription in HTML")
 	}
 
@@ -130,7 +130,7 @@ func TestGeneratePresentationWithImage(t *testing.T) {
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Close()
 
-	err = generator.GeneratePresentation(testScript, tmpFile.Name())
+	err = generator.GeneratePresentation(testScript, tmpFile.Name(), "modern")
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 		return
@@ -211,7 +211,7 @@ func TestGeneratePresentationInvalidPath(t *testing.T) {
 	}
 
 	generator := NewHTMLGenerator()
-	err := generator.GeneratePresentation(testScript, "/invalid/path/file.html")
+	err := generator.GeneratePresentation(testScript, "/invalid/path/file.html", "modern")
 	if err == nil {
 		t.Error("Expected error for invalid path")
 	}
