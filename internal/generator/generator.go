@@ -88,6 +88,10 @@ func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string
 }
 
 func (h *HTMLGenerator) GeneratePresentationWithAudio(s *script.Script, outputPath string, theme string, includeTranscription bool, audioFiles []string) error {
+	return h.GeneratePresentationWithOptions(s, outputPath, theme, includeTranscription, audioFiles, false)
+}
+
+func (h *HTMLGenerator) GeneratePresentationWithOptions(s *script.Script, outputPath string, theme string, includeTranscription bool, audioFiles []string, backgroundMode bool) error {
 	styleCSS, err := h.styleManager.GetStyle(theme)
 	if err != nil {
 		return fmt.Errorf("failed to get style: %w", err)
@@ -99,12 +103,14 @@ func (h *HTMLGenerator) GeneratePresentationWithAudio(s *script.Script, outputPa
 		Style                template.CSS
 		IncludeTranscription bool
 		HasAudio             bool
+		BackgroundMode       bool
 	}{
 		Script:               s,
 		Slides:               h.processSlidesWithAudio(s.Slides, audioFiles),
 		Style:                template.CSS(styleCSS),
 		IncludeTranscription: includeTranscription,
 		HasAudio:             len(audioFiles) > 0,
+		BackgroundMode:       backgroundMode,
 	}
 
 	file, err := os.Create(outputPath)
@@ -355,8 +361,9 @@ const htmlTemplate = `<!DOCTYPE html>
                     }, 100);
                 }
                 
-                // Play audio if available and presentation is playing
-                if (isPlaying && slides[index].dataset.audio) {
+                // Play audio if available and presentation is playing (skip in background mode)
+                const isBackgroundMode = {{.BackgroundMode}};
+                if (isPlaying && slides[index].dataset.audio && !isBackgroundMode) {
                     currentAudio = new Audio(slides[index].dataset.audio);
                     currentAudio.play().catch(e => console.error('Failed to play audio:', e));
                 }
@@ -393,9 +400,9 @@ const htmlTemplate = `<!DOCTYPE html>
             const controls = document.querySelector('.controls');
             controls.classList.add('hidden');
             
-            // Play audio for the current slide if available
+            // Play audio for the current slide if available (skip in background mode)
             const currentSlide = slides[currentSlideIndex];
-            if (currentSlide.dataset.audio) {
+            if (currentSlide.dataset.audio && !isBackgroundMode) {
                 currentAudio = new Audio(currentSlide.dataset.audio);
                 currentAudio.play().catch(e => console.error('Failed to play audio for first slide:', e));
             }

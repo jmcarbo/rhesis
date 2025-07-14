@@ -28,11 +28,12 @@ func main() {
 		apiKey        = flag.String("elevenlabs-key", os.Getenv("ELEVENLABS_API_KEY"), "ElevenLabs API key (or set ELEVENLABS_API_KEY env var)")
 		voiceID       = flag.String("voice", "", "ElevenLabs voice ID (optional, defaults to Rachel)")
 		skipAudioGen  = flag.Bool("skip-audio-creation", false, "Skip audio generation if audio files already exist")
+		background    = flag.Bool("background", false, "Run presentation in background (headless mode)")
 	)
 	flag.Parse()
 
 	if *scriptPath == "" {
-		fmt.Println("Usage: rhesis -script <script-file> [-output <html-file>] [-style <style-name|css-file>] [-record <video-file>] [-play] [-transcription] [-subtitle <subtitle-file>] [-sound] [-skip-audio-creation] [-elevenlabs-key <api-key>] [-voice <voice-id>]")
+		fmt.Println("Usage: rhesis -script <script-file> [-output <html-file>] [-style <style-name|css-file>] [-record <video-file>] [-play] [-background] [-transcription] [-subtitle <subtitle-file>] [-sound] [-skip-audio-creation] [-elevenlabs-key <api-key>] [-voice <voice-id>]")
 		os.Exit(1)
 	}
 
@@ -118,7 +119,7 @@ func main() {
 
 	gen := generator.NewHTMLGenerator()
 	if *sound && len(audioFiles) > 0 {
-		if err := gen.GeneratePresentationWithAudio(parsedScript, *outputPath, *style, *transcription, audioFiles); err != nil {
+		if err := gen.GeneratePresentationWithOptions(parsedScript, *outputPath, *style, *transcription, audioFiles, *background); err != nil {
 			log.Fatalf("Failed to generate presentation: %v", err)
 		}
 	} else {
@@ -152,8 +153,11 @@ func main() {
 	}
 
 	if *play {
+		if *background {
+			fmt.Println("Running presentation in background mode (headless)...")
+		}
 		p := player.NewPresentationPlayer()
-		if err := p.PlayPresentation(*outputPath, *recordPath); err != nil {
+		if err := p.PlayPresentationWithOptions(*outputPath, *recordPath, *background); err != nil {
 			log.Fatalf("Failed to play presentation: %v", err)
 		}
 

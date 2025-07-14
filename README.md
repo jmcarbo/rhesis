@@ -79,6 +79,9 @@ export ELEVENLABS_API_KEY=your_api_key
 
 # Reuse existing audio files (skip generation)
 ./bin/rhesis -script presentation.md -output presentation.html -sound -skip-audio-creation -play
+
+# Generate and record in background mode (no visible browser)
+./bin/rhesis -script presentation.md -output presentation.html -sound -play -record video.mp4 -background -elevenlabs-key YOUR_API_KEY
 ```
 
 ### Command Line Options
@@ -86,6 +89,7 @@ export ELEVENLABS_API_KEY=your_api_key
 - `-script`: Path to the presentation script file (required)
 - `-output`: Output HTML file path (default: "presentation.html")
 - `-play`: Play the presentation after generating (optional)
+- `-background`: Run presentation in background/headless mode (optional, use with -play)
 - `-record`: Path to save video recording (optional, requires -play)
 - `-sound`: Generate audio narration from transcriptions using ElevenLabs (optional)
 - `-skip-audio-creation`: Skip audio generation if audio files already exist (optional, use with -sound)
