@@ -120,13 +120,29 @@ body {
     color: #f8f8f2;
 }
 
-/* Syntax highlighting */
-.hljs-keyword { color: #ff79c6; }
-.hljs-string { color: #f1fa8c; }
-.hljs-comment { color: #6272a4; }
-.hljs-number { color: #bd93f9; }
-.hljs-function { color: #50fa7b; }
-.hljs-class { color: #8be9fd; }
+/* Syntax highlighting - Dracula inspired */
+.hljs-keyword { color: #ff79c6; font-weight: 600; }  /* Pink */
+.hljs-string { color: #f1fa8c; }  /* Yellow */
+.hljs-comment { color: #6272a4; font-style: italic; }  /* Comment purple */
+.hljs-number { color: #bd93f9; }  /* Purple */
+.hljs-function { color: #50fa7b; font-weight: 600; }  /* Green */
+.hljs-class { color: #8be9fd; font-weight: 600; }  /* Cyan */
+.hljs-attribute { color: #50fa7b; }  /* Green */
+.hljs-built_in { color: #8be9fd; font-style: italic; }  /* Cyan italic */
+.hljs-type { color: #8be9fd; }  /* Cyan */
+.hljs-variable { color: #f8f8f2; }  /* Foreground */
+.hljs-title { color: #50fa7b; font-weight: 600; }  /* Green */
+.hljs-params { color: #ffb86c; font-style: italic; }  /* Orange italic */
+.hljs-operator { color: #ff79c6; }  /* Pink */
+.hljs-literal { color: #bd93f9; }  /* Purple */
+.hljs-meta { color: #ff79c6; }  /* Pink */
+.hljs-regexp { color: #ff5555; }  /* Red */
+.hljs-selector-tag { color: #ff79c6; }  /* Pink */
+.hljs-selector-class { color: #50fa7b; }  /* Green */
+.hljs-selector-id { color: #8be9fd; }  /* Cyan */
+.hljs-tag { color: #ff79c6; }  /* Pink */
+.hljs-name { color: #ff79c6; }  /* Pink */
+.hljs-attr { color: #50fa7b; }  /* Green */
 
 .slide img {
     max-width: 90%;

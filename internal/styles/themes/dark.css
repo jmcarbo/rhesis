@@ -106,13 +106,28 @@ body {
 }
 
 /* Syntax highlighting - Monokai inspired */
-.hljs-keyword { color: #ff0080; }
-.hljs-string { color: #ffee00; }
-.hljs-comment { color: #75715e; }
-.hljs-number { color: #ae81ff; }
-.hljs-function { color: #00ff88; }
-.hljs-class { color: #66d9ef; }
-.hljs-attribute { color: #fd971f; }
+.hljs-keyword { color: #ff0080; font-weight: 600; }  /* Hot pink */
+.hljs-string { color: #ffee00; }  /* Yellow */
+.hljs-comment { color: #75715e; font-style: italic; }  /* Gray */
+.hljs-number { color: #ae81ff; }  /* Purple */
+.hljs-function { color: #00ff88; font-weight: 600; }  /* Mint green */
+.hljs-class { color: #66d9ef; font-weight: 600; }  /* Cyan */
+.hljs-attribute { color: #fd971f; }  /* Orange */
+.hljs-built_in { color: #66d9ef; }  /* Cyan */
+.hljs-type { color: #66d9ef; font-style: italic; }  /* Cyan italic */
+.hljs-variable { color: #f8f8f2; }  /* White */
+.hljs-title { color: #00ff88; font-weight: 600; }  /* Mint green */
+.hljs-params { color: #fd971f; font-style: italic; }  /* Orange italic */
+.hljs-operator { color: #ff0080; }  /* Hot pink */
+.hljs-literal { color: #ae81ff; }  /* Purple */
+.hljs-meta { color: #75715e; }  /* Gray */
+.hljs-regexp { color: #e6db74; }  /* Light yellow */
+.hljs-selector-tag { color: #ff0080; }  /* Hot pink */
+.hljs-selector-class { color: #00ff88; }  /* Mint green */
+.hljs-selector-id { color: #fd971f; }  /* Orange */
+.hljs-tag { color: #ff0080; }  /* Hot pink */
+.hljs-name { color: #ff0080; }  /* Hot pink */
+.hljs-attr { color: #00ff88; }  /* Mint green */
 
 .slide img {
     max-width: 88%;

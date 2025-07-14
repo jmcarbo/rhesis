@@ -105,6 +105,30 @@ body {
     color: #333;
 }
 
+/* Syntax highlighting - Clean vibrant palette */
+.hljs-keyword { color: #d14; font-weight: 600; }  /* Red */
+.hljs-string { color: #690; }  /* Green */
+.hljs-comment { color: #999; font-style: italic; }  /* Gray */
+.hljs-number { color: #09a; }  /* Teal */
+.hljs-function { color: #07a; font-weight: 600; }  /* Blue */
+.hljs-class { color: #e90; font-weight: 600; }  /* Orange */
+.hljs-attribute { color: #1a8; }  /* Dark cyan */
+.hljs-built_in { color: #e36; }  /* Pink */
+.hljs-type { color: #606; }  /* Purple */
+.hljs-variable { color: #008; }  /* Dark blue */
+.hljs-title { color: #d14; font-weight: 600; }  /* Red */
+.hljs-params { color: #666; }  /* Dark gray */
+.hljs-operator { color: #000; font-weight: 600; }  /* Black */
+.hljs-literal { color: #09a; }  /* Teal */
+.hljs-meta { color: #999; }  /* Gray */
+.hljs-regexp { color: #b68; }  /* Plum */
+.hljs-selector-tag { color: #07a; }  /* Blue */
+.hljs-selector-class { color: #e90; }  /* Orange */
+.hljs-selector-id { color: #d14; }  /* Red */
+.hljs-tag { color: #008; }  /* Dark blue */
+.hljs-name { color: #07a; }  /* Blue */
+.hljs-attr { color: #1a8; }  /* Dark cyan */
+
 .slide img {
     max-width: 85%;
     max-height: 65vh;
