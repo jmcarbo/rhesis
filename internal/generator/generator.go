@@ -312,6 +312,10 @@ const htmlTemplate = `<!DOCTYPE html>
             slides.forEach(slide => slide.classList.remove('active'));
             transcriptionSlides.forEach(trans => trans.style.display = 'none');
             
+            // Remove active class from transcription content
+            const transcriptionContent = document.getElementById('transcriptionContent');
+            transcriptionContent.classList.remove('active');
+            
             if (index >= 0 && index < slides.length) {
                 slides[index].classList.add('active');
                 transcriptionSlides[index].style.display = 'block';
@@ -319,9 +323,9 @@ const htmlTemplate = `<!DOCTYPE html>
                 window.currentSlideIndex = index;
                 currentSlideSpan.textContent = index + 1;
                 
-                // Fade in transcription
+                // Fade in transcription content
                 setTimeout(() => {
-                    transcriptionSlides[index].classList.add('active');
+                    transcriptionContent.classList.add('active');
                 }, 100);
             }
         }
