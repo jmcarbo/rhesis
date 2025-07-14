@@ -393,6 +393,13 @@ const htmlTemplate = `<!DOCTYPE html>
             const controls = document.querySelector('.controls');
             controls.classList.add('hidden');
             
+            // Play audio for the current slide if available
+            const currentSlide = slides[currentSlideIndex];
+            if (currentSlide.dataset.audio) {
+                currentAudio = new Audio(currentSlide.dataset.audio);
+                currentAudio.play().catch(e => console.error('Failed to play audio for first slide:', e));
+            }
+            
             function advanceSlide() {
                 if (!isPlaying) return;
                 
@@ -425,6 +432,12 @@ const htmlTemplate = `<!DOCTYPE html>
             if (slideTimer) {
                 clearTimeout(slideTimer);
                 slideTimer = null;
+            }
+            
+            // Stop any playing audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
             }
             
             // Show controls when playback stops
