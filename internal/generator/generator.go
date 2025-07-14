@@ -401,6 +401,7 @@ const htmlTemplate = `<!DOCTYPE html>
             controls.classList.add('hidden');
             
             // Play audio for the current slide if available (skip in background mode)
+            const isBackgroundMode = {{.BackgroundMode}};
             const currentSlide = slides[currentSlideIndex];
             if (currentSlide.dataset.audio && !isBackgroundMode) {
                 currentAudio = new Audio(currentSlide.dataset.audio);

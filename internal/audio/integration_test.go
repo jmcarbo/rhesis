@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package audio
@@ -57,7 +58,7 @@ func TestAudioVideoMergerIntegration(t *testing.T) {
 			// Create test audio files
 			audioFiles := []string{}
 			durations := []int{5, 5, 5} // 3 slides, 5 seconds each
-			
+
 			for i := 0; i < 3; i++ {
 				audioPath := filepath.Join(tmpDir, fmt.Sprintf("audio_%d.mp3", i))
 				if err := createTestAudio(audioPath, 3); err != nil {
@@ -109,7 +110,7 @@ func createTestVideo(outputPath string, codec string) error {
 	}
 
 	args = append(args, outputPath)
-	
+
 	cmd := exec.Command("ffmpeg", args...)
 	return cmd.Run()
 }
@@ -123,7 +124,7 @@ func createTestAudio(outputPath string, duration int) error {
 		"-b:a", "128k",
 		outputPath,
 	}
-	
+
 	cmd := exec.Command("ffmpeg", args...)
 	return cmd.Run()
 }
@@ -137,7 +138,7 @@ func verifyMediaStreams(filePath string) (hasAudio, hasVideo bool) {
 		"-of", "csv=p=0",
 		filePath,
 	)
-	
+
 	output, err := cmd.Output()
 	if err == nil && string(output) == "video\n" {
 		hasVideo = true
@@ -150,7 +151,7 @@ func verifyMediaStreams(filePath string) (hasAudio, hasVideo bool) {
 		"-of", "csv=p=0",
 		filePath,
 	)
-	
+
 	output, err = cmd.Output()
 	if err == nil && string(output) == "audio\n" {
 		hasAudio = true
@@ -200,7 +201,7 @@ func TestCreateTimedAudioTrack(t *testing.T) {
 	// Verify approximate duration (should be ~12 seconds)
 	duration := getAudioDuration(t, outputPath)
 	expectedDuration := 12.0 // 5 + 3 + 4 seconds
-	tolerance := 1.0 // Allow 1 second tolerance
+	tolerance := 1.0         // Allow 1 second tolerance
 
 	if duration < expectedDuration-tolerance || duration > expectedDuration+tolerance {
 		t.Errorf("Expected duration ~%.1f seconds, got %.1f seconds", expectedDuration, duration)
@@ -215,7 +216,7 @@ func getAudioDuration(t *testing.T, filePath string) float64 {
 		"-of", "default=noprint_wrappers=1:nokey=1",
 		filePath,
 	)
-	
+
 	output, err := cmd.Output()
 	if err != nil {
 		t.Fatalf("Failed to get audio duration: %v", err)

@@ -56,11 +56,11 @@ func TestMergerWithRealFFmpeg(t *testing.T) {
 	t.Run("CodecDetection", func(t *testing.T) {
 		// Create a simple VP8 video
 		vp8Path := filepath.Join(tmpDir, "test_vp8.webm")
-		cmd := exec.Command("ffmpeg", 
+		cmd := exec.Command("ffmpeg",
 			"-f", "lavfi", "-i", "testsrc=duration=1:size=64x64:rate=1",
 			"-c:v", "libvpx", "-b:v", "50k",
 			vp8Path)
-		
+
 		if err := cmd.Run(); err != nil {
 			t.Skipf("Failed to create VP8 test video: %v", err)
 		}
@@ -116,7 +116,7 @@ func TestFFmpegCommandGeneration(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Just verify the function handles different inputs without panicking
 			// We can't actually run ffmpeg without it being installed
-			
+
 			// Check that we handle various input combinations
 			if len(tt.audioFiles) > len(tt.slideDurations) {
 				t.Logf("Warning: More audio files than slide durations")

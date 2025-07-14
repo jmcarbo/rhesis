@@ -16,10 +16,10 @@ func TestNewAudioVideoMerger(t *testing.T) {
 
 func TestCheckFFmpeg(t *testing.T) {
 	merger := NewAudioVideoMerger()
-	
+
 	// Check if ffmpeg is available
 	err := merger.checkFFmpeg()
-	
+
 	// This test will pass or fail based on whether ffmpeg is installed
 	// We'll check if the error message is what we expect when ffmpeg is not found
 	if err != nil {
@@ -37,21 +37,21 @@ func TestMergeAudioWithVideoNoFFmpeg(t *testing.T) {
 	merger := &AudioVideoMerger{
 		ffmpegPath: "/nonexistent/ffmpeg",
 	}
-	
+
 	tmpDir := t.TempDir()
 	videoPath := filepath.Join(tmpDir, "test.mp4")
 	outputPath := filepath.Join(tmpDir, "output.mp4")
-	
+
 	// Create dummy video file
 	if err := os.WriteFile(videoPath, []byte("dummy video"), 0644); err != nil {
 		t.Fatalf("Failed to create test video: %v", err)
 	}
-	
+
 	err := merger.MergeAudioWithVideo(videoPath, []string{}, []int{10}, outputPath)
 	if err == nil {
 		t.Error("Expected error when ffmpeg is not available")
 	}
-	
+
 	if !contains(err.Error(), "ffmpeg not available") {
 		t.Errorf("Expected error about ffmpeg not available, got: %v", err)
 	}
@@ -84,13 +84,13 @@ func TestCreateTimedAudioTrackLogic(t *testing.T) {
 			expectedParts:  3,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// This is a logic test - we're not actually running ffmpeg
 			// Just verify the function handles different input combinations correctly
 			if len(tt.slideDurations) != tt.expectedParts {
-				t.Errorf("Test setup error: durations count %d != expected parts %d", 
+				t.Errorf("Test setup error: durations count %d != expected parts %d",
 					len(tt.slideDurations), tt.expectedParts)
 			}
 		})

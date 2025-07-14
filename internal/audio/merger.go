@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -80,13 +82,21 @@ func (m *AudioVideoMerger) createTimedAudioTrack(audioFiles []string, slideDurat
 			audioSeconds := audioDuration.Seconds()
 			slideSeconds := float64(duration)
 
+			fmt.Printf("Slide %d: audio=%.2fs, slide=%.2fs\n", i+1, audioSeconds, slideSeconds)
+
 			if audioSeconds < slideSeconds {
 				// Need to add silence after the audio
 				silenceDuration := slideSeconds - audioSeconds
+				fmt.Printf("  Adding %.2fs of silence\n", silenceDuration)
 				filterParts = append(filterParts,
 					fmt.Sprintf("[%d:a]apad=pad_dur=%.3f[a%d]", inputIndex, silenceDuration, i))
+			} else if audioSeconds > slideSeconds {
+				// Audio is longer than slide, trim it to match slide duration
+				fmt.Printf("  Trimming audio to %.2fs\n", slideSeconds)
+				filterParts = append(filterParts,
+					fmt.Sprintf("[%d:a]atrim=0:%.3f,asetpts=PTS-STARTPTS[a%d]", inputIndex, slideSeconds, i))
 			} else {
-				// Audio is longer or equal, just reference it
+				// Audio matches slide duration exactly
 				filterParts = append(filterParts, fmt.Sprintf("[%d:a]acopy[a%d]", inputIndex, i))
 			}
 			inputIndex++
@@ -126,6 +136,38 @@ func (m *AudioVideoMerger) createTimedAudioTrack(audioFiles []string, slideDurat
 
 // mergeFiles merges the audio track with the video file
 func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) error {
+	// Get video duration
+	videoDurationCmd := exec.Command(m.ffmpegPath, "-i", videoPath)
+	videoDurationOutput, _ := videoDurationCmd.CombinedOutput()
+	videoDurationStr := string(videoDurationOutput)
+
+	// Extract video duration using regex
+	var videoDuration float64
+	durationRegex := regexp.MustCompile(`Duration: (\d{2}):(\d{2}):(\d{2}\.\d+)`)
+	if matches := durationRegex.FindStringSubmatch(videoDurationStr); len(matches) > 3 {
+		hours, _ := strconv.ParseFloat(matches[1], 64)
+		minutes, _ := strconv.ParseFloat(matches[2], 64)
+		seconds, _ := strconv.ParseFloat(matches[3], 64)
+		videoDuration = hours*3600 + minutes*60 + seconds
+	}
+
+	// Get audio duration
+	audioDurationCmd := exec.Command(m.ffmpegPath, "-i", audioPath)
+	audioDurationOutput, _ := audioDurationCmd.CombinedOutput()
+	audioDurationStr := string(audioDurationOutput)
+
+	var audioDuration float64
+	if matches := durationRegex.FindStringSubmatch(audioDurationStr); len(matches) > 3 {
+		hours, _ := strconv.ParseFloat(matches[1], 64)
+		minutes, _ := strconv.ParseFloat(matches[2], 64)
+		seconds, _ := strconv.ParseFloat(matches[3], 64)
+		audioDuration = hours*3600 + minutes*60 + seconds
+	}
+
+	// Calculate delay needed
+	delay := videoDuration - audioDuration
+	fmt.Printf("Video duration: %.2fs, Audio duration: %.2fs, Delay: %.2fs\n", videoDuration, audioDuration, delay)
+
 	// First, detect the input video codec
 	probeCmd := exec.Command(m.ffmpegPath, "-i", videoPath)
 	probeOutput, _ := probeCmd.CombinedOutput()
@@ -159,7 +201,14 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 	args := []string{
 		"-y", // Overwrite output
 		"-i", videoPath,
-		"-i", audioPath,
+	}
+
+	// Add audio with delay if needed
+	if delay > 0.5 { // Only add delay if it's significant
+		// Add silence at the beginning of audio
+		args = append(args, "-itsoffset", fmt.Sprintf("%.3f", delay), "-i", audioPath)
+	} else {
+		args = append(args, "-i", audioPath)
 	}
 
 	// Handle video codec

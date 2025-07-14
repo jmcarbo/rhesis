@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package main
@@ -55,7 +56,7 @@ func TestAudioVideoMergingE2E(t *testing.T) {
 	t.Run("VP8_to_MP4", func(t *testing.T) {
 		outputPath := filepath.Join(tmpDir, "output.mp4")
 		durations := []int{3, 3} // Two 3-second slides
-		
+
 		err := merger.MergeAudioWithVideo(videoPath, audioFiles, durations, outputPath)
 		if err != nil {
 			t.Fatalf("Failed to merge: %v", err)
