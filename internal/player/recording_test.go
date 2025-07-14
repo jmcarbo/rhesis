@@ -40,7 +40,7 @@ func TestRecordingIntegration(t *testing.T) {
 	tmpDir := t.TempDir()
 	htmlFile := filepath.Join(tmpDir, "test_presentation.html")
 
-	if err := gen.GeneratePresentation(testScript, htmlFile); err != nil {
+	if err := gen.GeneratePresentation(testScript, htmlFile, "modern"); err != nil {
 		t.Fatalf("Failed to generate presentation: %v", err)
 	}
 

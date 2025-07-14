@@ -121,10 +121,10 @@ This shows Go code`,
 				DefaultTime: 10,
 				Slides: []Slide{
 					{
-						Title: "Code Slide",
-						Content: "Here's some code:\n\n```go\nfunc main() {\n    fmt.Println(\"Hello\")\n}\n```",
+						Title:         "Code Slide",
+						Content:       "Here's some code:\n\n```go\nfunc main() {\n    fmt.Println(\"Hello\")\n}\n```",
 						Transcription: "This shows Go code",
-						Duration: 10,
+						Duration:      10,
 					},
 				},
 			},
@@ -474,7 +474,7 @@ func TestParseScriptLargeFile(t *testing.T) {
 	// Test with many slides
 	var content strings.Builder
 	content.WriteString("# Large Presentation\n\n")
-	
+
 	numSlides := 100
 	for i := 1; i <= numSlides; i++ {
 		content.WriteString(fmt.Sprintf("## Slide %d\n\n", i))

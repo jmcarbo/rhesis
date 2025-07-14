@@ -54,7 +54,7 @@ This is the transcription for slide 2`
 	gen := generator.NewHTMLGenerator()
 	outputFile := filepath.Join(tmpDir, "presentation.html")
 
-	err = gen.GeneratePresentation(parsedScript, outputFile)
+	err = gen.GeneratePresentation(parsedScript, outputFile, "modern")
 	if err != nil {
 		t.Fatalf("Failed to generate presentation: %v", err)
 	}
@@ -141,7 +141,7 @@ This slide contains an image`
 	gen := generator.NewHTMLGenerator()
 	outputFile := filepath.Join(tmpDir, "presentation.html")
 
-	err = gen.GeneratePresentation(parsedScript, outputFile)
+	err = gen.GeneratePresentation(parsedScript, outputFile, "modern")
 	if err != nil {
 		t.Fatalf("Failed to generate presentation: %v", err)
 	}
@@ -196,7 +196,7 @@ This is a quick test`
 	gen := generator.NewHTMLGenerator()
 	outputFile := filepath.Join(tmpDir, "workflow.html")
 
-	err = gen.GeneratePresentation(parsedScript, outputFile)
+	err = gen.GeneratePresentation(parsedScript, outputFile, "modern")
 	if err != nil {
 		t.Fatalf("Failed to generate presentation: %v", err)
 	}
@@ -274,7 +274,7 @@ func TestErrorHandling(t *testing.T) {
 			}
 
 			gen := generator.NewHTMLGenerator()
-			err = gen.GeneratePresentation(parsedScript, tt.outputPath)
+			err = gen.GeneratePresentation(parsedScript, tt.outputPath, "modern")
 
 			if tt.expectError && err == nil {
 				t.Error("Expected error but got none")
@@ -467,7 +467,7 @@ More content`,
 			// Also test HTML generation
 			gen := generator.NewHTMLGenerator()
 			outputFile := filepath.Join(tmpDir, "output.html")
-			if err := gen.GeneratePresentation(parsedScript, outputFile); err != nil {
+			if err := gen.GeneratePresentation(parsedScript, outputFile, "modern"); err != nil {
 				t.Errorf("Failed to generate HTML: %v", err)
 			}
 		})

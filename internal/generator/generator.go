@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"bytes"
 	"fmt"
 	"html/template"
 	"os"
@@ -8,10 +9,17 @@ import (
 	"strings"
 
 	"github.com/jmcarbo/rhesis/internal/script"
+	"github.com/jmcarbo/rhesis/internal/styles"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 type HTMLGenerator struct {
-	template *template.Template
+	template     *template.Template
+	styleManager *styles.StyleManager
+	markdown     goldmark.Markdown
 }
 
 func NewHTMLGenerator() *HTMLGenerator {
@@ -19,19 +27,48 @@ func NewHTMLGenerator() *HTMLGenerator {
 		"safeURL": func(s string) template.URL {
 			return template.URL(s)
 		},
+		"safeHTML": func(s string) template.HTML {
+			return template.HTML(s)
+		},
 	})
+	
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			extension.GFM,
+			extension.Table,
+			extension.Strikethrough,
+			extension.TaskList,
+		),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+		goldmark.WithRendererOptions(
+			html.WithHardWraps(),
+			html.WithXHTML(),
+		),
+	)
+	
 	return &HTMLGenerator{
-		template: template.Must(tmpl.Parse(htmlTemplate)),
+		template:     template.Must(tmpl.Parse(htmlTemplate)),
+		styleManager: styles.NewStyleManager(),
+		markdown:     md,
 	}
 }
 
-func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string) error {
+func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string, theme string) error {
+	styleCSS, err := h.styleManager.GetStyle(theme)
+	if err != nil {
+		return fmt.Errorf("failed to get style: %w", err)
+	}
+	
 	data := struct {
 		Script *script.Script
 		Slides []SlideData
+		Style  template.CSS
 	}{
 		Script: s,
 		Slides: h.processSlides(s.Slides),
+		Style:  template.CSS(styleCSS),
 	}
 
 	file, err := os.Create(outputPath)
@@ -45,22 +82,35 @@ func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string
 
 type SlideData struct {
 	script.Slide
-	Index    int
-	ImageSrc string
+	Index              int
+	ImageSrc           string
+	ContentHTML        template.HTML
+	TranscriptionHTML  template.HTML
 }
 
 func (h *HTMLGenerator) processSlides(slides []script.Slide) []SlideData {
 	result := make([]SlideData, len(slides))
 	for i, slide := range slides {
 		result[i] = SlideData{
-			Slide: slide,
-			Index: i,
+			Slide:             slide,
+			Index:             i,
+			ContentHTML:       h.renderMarkdown(slide.Content),
+			TranscriptionHTML: h.renderMarkdown(slide.Transcription),
 		}
 		if slide.Image != "" {
 			result[i].ImageSrc = h.imageToBase64(slide.Image)
 		}
 	}
 	return result
+}
+
+func (h *HTMLGenerator) renderMarkdown(content string) template.HTML {
+	var buf bytes.Buffer
+	if err := h.markdown.Convert([]byte(content), &buf); err != nil {
+		// If markdown rendering fails, return the original content escaped
+		return template.HTML(template.HTMLEscapeString(content))
+	}
+	return template.HTML(buf.String())
 }
 
 func (h *HTMLGenerator) imageToBase64(imagePath string) string {
@@ -131,126 +181,7 @@ const htmlTemplate = `<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Script.Title}}</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #1a1a1a;
-            color: #fff;
-            overflow: hidden;
-        }
-        .presentation-container {
-            display: flex;
-            height: 100vh;
-        }
-        .slide-area {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-        }
-        .transcription-area {
-            flex: 1;
-            background: #2c3e50;
-            padding: 20px;
-            border-left: 2px solid #3498db;
-            display: flex;
-            flex-direction: column;
-        }
-        .slide {
-            display: none;
-            text-align: center;
-            max-width: 100%;
-        }
-        .slide.active {
-            display: block;
-        }
-        .slide h1 {
-            font-size: 3em;
-            margin-bottom: 30px;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        .slide p {
-            font-size: 1.5em;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            max-width: 800px;
-        }
-        .slide img {
-            max-width: 100%;
-            max-height: 60vh;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-        .transcription-title {
-            font-size: 1.2em;
-            color: #3498db;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #3498db;
-            padding-bottom: 5px;
-        }
-        .transcription-content {
-            font-size: 1em;
-            line-height: 1.6;
-            color: #ecf0f1;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-        .transcription-content.active {
-            opacity: 1;
-        }
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 4px;
-            background: #3498db;
-            transition: width 0.3s ease;
-            z-index: 1000;
-        }
-        .slide-counter {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.7);
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-        }
-        .controls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            opacity: 1;
-            transition: opacity 0.3s ease-in-out;
-        }
-        .controls.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        .btn:hover {
-            background: #2980b9;
-        }
-        .btn:disabled {
-            background: #7f8c8d;
-            cursor: not-allowed;
-        }
+        {{.Style}}
     </style>
 </head>
 <body>
@@ -261,7 +192,7 @@ const htmlTemplate = `<!DOCTYPE html>
             {{range .Slides}}
             <div class="slide" data-duration="{{.Duration}}" data-index="{{.Index}}">
                 <h1>{{.Title}}</h1>
-                {{if .Content}}<p>{{.Content}}</p>{{end}}
+                {{if .Content}}<div class="slide-content">{{.ContentHTML}}</div>{{end}}
                 {{if .ImageSrc}}<img src="{{safeURL .ImageSrc}}" alt="{{.Title}}">{{end}}
             </div>
             {{end}}
@@ -272,7 +203,7 @@ const htmlTemplate = `<!DOCTYPE html>
             <div class="transcription-content" id="transcriptionContent">
                 {{range .Slides}}
                 <div class="transcription-slide" data-index="{{.Index}}" style="display: none;">
-                    {{.Transcription}}
+                    {{.TranscriptionHTML}}
                 </div>
                 {{end}}
             </div>
