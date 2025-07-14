@@ -16,6 +16,7 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"go.abhg.dev/goldmark/mermaid"
 )
 
 type HTMLGenerator struct {
@@ -47,6 +48,7 @@ func NewHTMLGenerator() *HTMLGenerator {
 					chromahtml.WithLineNumbers(false),
 				),
 			),
+			&mermaid.Extender{},
 		),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),
