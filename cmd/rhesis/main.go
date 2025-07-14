@@ -13,16 +13,17 @@ import (
 
 func main() {
 	var (
-		scriptPath = flag.String("script", "", "Path to the presentation script file")
-		outputPath = flag.String("output", "presentation.html", "Output HTML file path")
-		recordPath = flag.String("record", "", "Path to save video recording (optional)")
-		play       = flag.Bool("play", false, "Play the presentation after generating")
-		style      = flag.String("style", "modern", "Presentation style (modern, minimal, dark, elegant, or path to custom CSS file)")
+		scriptPath    = flag.String("script", "", "Path to the presentation script file")
+		outputPath    = flag.String("output", "presentation.html", "Output HTML file path")
+		recordPath    = flag.String("record", "", "Path to save video recording (optional)")
+		play          = flag.Bool("play", false, "Play the presentation after generating")
+		style         = flag.String("style", "modern", "Presentation style (modern, minimal, dark, elegant, or path to custom CSS file)")
+		transcription = flag.Bool("transcription", false, "Include transcription panel in presentation")
 	)
 	flag.Parse()
 
 	if *scriptPath == "" {
-		fmt.Println("Usage: rhesis -script <script-file> [-output <html-file>] [-style <style-name|css-file>] [-record <video-file>] [-play]")
+		fmt.Println("Usage: rhesis -script <script-file> [-output <html-file>] [-style <style-name|css-file>] [-record <video-file>] [-play] [-transcription]")
 		os.Exit(1)
 	}
 
@@ -32,7 +33,7 @@ func main() {
 	}
 
 	gen := generator.NewHTMLGenerator()
-	if err := gen.GeneratePresentation(parsedScript, *outputPath, *style); err != nil {
+	if err := gen.GeneratePresentation(parsedScript, *outputPath, *style, *transcription); err != nil {
 		log.Fatalf("Failed to generate presentation: %v", err)
 	}
 

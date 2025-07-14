@@ -83,20 +83,22 @@ func NewHTMLGenerator() *HTMLGenerator {
 	}
 }
 
-func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string, theme string) error {
+func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string, theme string, includeTranscription bool) error {
 	styleCSS, err := h.styleManager.GetStyle(theme)
 	if err != nil {
 		return fmt.Errorf("failed to get style: %w", err)
 	}
 
 	data := struct {
-		Script *script.Script
-		Slides []SlideData
-		Style  template.CSS
+		Script               *script.Script
+		Slides               []SlideData
+		Style                template.CSS
+		IncludeTranscription bool
 	}{
-		Script: s,
-		Slides: h.processSlides(s.Slides),
-		Style:  template.CSS(styleCSS),
+		Script:               s,
+		Slides:               h.processSlides(s.Slides),
+		Style:                template.CSS(styleCSS),
+		IncludeTranscription: includeTranscription,
 	}
 
 	file, err := os.Create(outputPath)
@@ -210,6 +212,25 @@ const htmlTemplate = `<!DOCTYPE html>
     <title>{{.Script.Title}}</title>
     <style>
         {{.Style}}
+        {{if not .IncludeTranscription}}
+        /* Adjust layout when transcription is not included */
+        .slide-area {
+            flex: 1;
+            width: 100%;
+        }
+        
+        /* Responsive adjustments when transcription is not included */
+        @media (max-width: 768px) {
+            .presentation-container {
+                flex-direction: column;
+            }
+            
+            .slide-area {
+                flex: 1;
+                padding: 20px;
+            }
+        }
+        {{end}}
     </style>
 </head>
 <body>
@@ -226,6 +247,7 @@ const htmlTemplate = `<!DOCTYPE html>
             {{end}}
         </div>
         
+        {{if .IncludeTranscription}}
         <div class="transcription-area">
             <div class="transcription-title">Transcription</div>
             <div class="transcription-content" id="transcriptionContent">
@@ -236,6 +258,7 @@ const htmlTemplate = `<!DOCTYPE html>
                 {{end}}
             </div>
         </div>
+        {{end}}
     </div>
     
     <div class="slide-counter">
@@ -275,23 +298,28 @@ const htmlTemplate = `<!DOCTYPE html>
         
         function showSlide(index) {
             slides.forEach(slide => slide.classList.remove('active'));
-            transcriptionSlides.forEach(trans => trans.style.display = 'none');
             
-            // Remove active class from transcription content
             const transcriptionContent = document.getElementById('transcriptionContent');
-            transcriptionContent.classList.remove('active');
+            if (transcriptionContent) {
+                transcriptionSlides.forEach(trans => trans.style.display = 'none');
+                transcriptionContent.classList.remove('active');
+            }
             
             if (index >= 0 && index < slides.length) {
                 slides[index].classList.add('active');
-                transcriptionSlides[index].style.display = 'block';
+                if (transcriptionContent && transcriptionSlides[index]) {
+                    transcriptionSlides[index].style.display = 'block';
+                }
                 currentSlideIndex = index;
                 window.currentSlideIndex = index;
                 currentSlideSpan.textContent = index + 1;
                 
                 // Fade in transcription content
-                setTimeout(() => {
-                    transcriptionContent.classList.add('active');
-                }, 100);
+                if (transcriptionContent) {
+                    setTimeout(() => {
+                        transcriptionContent.classList.add('active');
+                    }, 100);
+                }
             }
         }
         
