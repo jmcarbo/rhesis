@@ -183,25 +183,72 @@ func (p *PresentationPlayer) playPresentation() error {
 		return err
 	}
 
+	// Get total duration before starting
+	totalDuration, err := p.page.Evaluate(`() => {
+		let total = 0;
+		document.querySelectorAll('.slide').forEach(slide => {
+			total += parseInt(slide.dataset.duration) * 1000;
+		});
+		return total;
+	}`)
+	if err != nil {
+		return err
+	}
+
+	// Handle both float64 and int types
+	var totalDurationMs float64
+	switch v := totalDuration.(type) {
+	case float64:
+		totalDurationMs = v
+	case int:
+		totalDurationMs = float64(v)
+	default:
+		return fmt.Errorf("unexpected duration type: %T", totalDuration)
+	}
+	fmt.Printf("Total presentation duration: %.1f seconds\n", totalDurationMs/1000)
+
 	if err := playBtn.Click(); err != nil {
 		return err
 	}
 
+	// Wait a moment for playback to start
+	time.Sleep(500 * time.Millisecond)
+
+	// Monitor playback status
+	startTime := time.Now()
 	for {
 		isPlaying, err := p.page.Evaluate(`() => window.isPlaying`)
 		if err != nil {
 			return err
 		}
 
+		// Get current slide index
+		slideIndex, _ := p.page.Evaluate(`() => window.currentSlideIndex`)
+		totalSlides, _ := p.page.Evaluate(`() => document.querySelectorAll('.slide').length`)
+
+		if idx, ok := slideIndex.(float64); ok {
+			if total, ok := totalSlides.(float64); ok {
+				fmt.Printf("\rPlaying slide %d of %d", int(idx)+1, int(total))
+			}
+		}
+
 		// Handle case where isPlaying might be nil or not a bool
 		playing, ok := isPlaying.(bool)
 		if !ok || !playing {
+			// Check if we've played for at least most of the expected duration
+			elapsed := time.Since(startTime)
+			if elapsed < time.Duration(totalDurationMs*0.9)*time.Millisecond {
+				fmt.Printf("\nPresentation stopped early after %.1f seconds\n", elapsed.Seconds())
+			} else {
+				fmt.Printf("\nPresentation completed\n")
+			}
 			break
 		}
 
 		time.Sleep(100 * time.Millisecond)
 	}
 
+	// Wait a bit more to ensure video capture completes
 	time.Sleep(2 * time.Second)
 	return nil
 }
