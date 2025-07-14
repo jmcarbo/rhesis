@@ -10,7 +10,7 @@ A Go program that reads a script and generates, plays, and records presentations
 - **Transcription support**: Display explanatory text alongside each slide
 - **Image support**: Embed images directly in slides (PNG, JPG, GIF, WebP)
 - **Automatic playback**: Play presentations automatically with proper timing
-- **Recording capability**: Record presentations to video files using Playwright
+- **Recording capability**: Record presentations to video files (WebM, MP4) using Playwright
 - **Keyboard controls**: Navigate slides with arrow keys and spacebar
 - **Responsive design**: Works on different screen sizes
 
@@ -47,8 +47,11 @@ go run github.com/playwright-community/playwright-go/cmd/playwright@latest insta
 # Generate and play presentation
 ./bin/rhesis -script presentation.yaml -output presentation.html -play
 
-# Generate, play, and record presentation
+# Generate, play, and record presentation (WebM format)
 ./bin/rhesis -script presentation.yaml -output presentation.html -play -record video.webm
+
+# Generate, play, and record presentation (MP4 format)
+./bin/rhesis -script presentation.yaml -output presentation.html -play -record video.mp4
 ```
 
 ### Command Line Options
@@ -107,6 +110,26 @@ When playing a presentation in the browser:
 - **Enter**: Toggle play/pause
 - **Play button**: Start/pause automatic playback
 - **Previous/Next buttons**: Manual navigation
+
+## Recording Presentations
+
+The recording feature allows you to capture your presentations as video files:
+
+- **Supported formats**: WebM and MP4
+- **Resolution**: Full HD (1920x1080)
+- **Requirements**: Playwright browsers must be installed
+- **Usage**: Use the `-record` flag with a filename ending in `.webm` or `.mp4`
+
+The recording captures the entire presentation playback, including slide transitions and timing. Videos are saved in the specified format and location.
+
+Example:
+```bash
+# Record a presentation as WebM
+./bin/rhesis -script demo.yaml -play -record output/demo.webm
+
+# Record a presentation as MP4
+./bin/rhesis -script demo.yaml -play -record output/demo.mp4
+```
 
 ## Development
 

@@ -90,8 +90,8 @@ func TestPlayPresentationWithRecording(t *testing.T) {
 	htmlFile := createTestHTML(t)
 	defer os.Remove(htmlFile)
 
-	recordFile := filepath.Join(os.TempDir(), "test_recording.webm")
-	defer os.Remove(recordFile)
+	recordDir := t.TempDir()
+	recordFile := filepath.Join(recordDir, "test_recording.webm")
 
 	player := NewPresentationPlayer()
 
@@ -106,8 +106,19 @@ func TestPlayPresentationWithRecording(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		// Note: Recording is not currently implemented, so we don't check for the file
-		// This test validates that the recording parameter is accepted without errors
+		// Wait a moment for file to be written
+		time.Sleep(500 * time.Millisecond)
+
+		// Check if recording file was created
+		if _, err := os.Stat(recordFile); os.IsNotExist(err) {
+			t.Error("Expected recording file to be created")
+		} else {
+			// Verify file has content
+			info, _ := os.Stat(recordFile)
+			if info.Size() == 0 {
+				t.Error("Recording file is empty")
+			}
+		}
 	case <-time.After(30 * time.Second):
 		t.Error("Test timed out")
 	}
@@ -136,6 +147,9 @@ func TestPresentationPlayerInitializeAndCleanup(t *testing.T) {
 	}
 	if player.browser == nil {
 		t.Error("Expected browser to be initialized")
+	}
+	if player.context == nil {
+		t.Error("Expected context to be initialized")
 	}
 	if player.page == nil {
 		t.Error("Expected page to be initialized")
