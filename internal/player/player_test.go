@@ -576,7 +576,7 @@ func TestPlaybackWithGeneratedHTML(t *testing.T) {
 	// Generate HTML using the actual generator
 	generator := generator.NewHTMLGenerator()
 	htmlFile := filepath.Join(t.TempDir(), "test_generated.html")
-	if err := generator.GeneratePresentation(scriptContent, htmlFile, "modern"); err != nil {
+	if err := generator.GeneratePresentation(scriptContent, htmlFile, "modern", false); err != nil {
 		t.Fatalf("Failed to generate HTML: %v", err)
 	}
 

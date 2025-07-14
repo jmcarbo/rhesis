@@ -22,9 +22,13 @@ func NewPresentationPlayer() *PresentationPlayer {
 }
 
 func (p *PresentationPlayer) PlayPresentation(htmlPath, recordPath string) error {
+	return p.PlayPresentationWithOptions(htmlPath, recordPath, false)
+}
+
+func (p *PresentationPlayer) PlayPresentationWithOptions(htmlPath, recordPath string, headless bool) error {
 	p.recordPath = recordPath
 
-	if err := p.initialize(); err != nil {
+	if err := p.initializeWithOptions(headless); err != nil {
 		return fmt.Errorf("failed to initialize player: %w", err)
 	}
 	defer p.cleanup()
@@ -52,6 +56,10 @@ func (p *PresentationPlayer) PlayPresentation(htmlPath, recordPath string) error
 }
 
 func (p *PresentationPlayer) initialize() error {
+	return p.initializeWithOptions(false)
+}
+
+func (p *PresentationPlayer) initializeWithOptions(headless bool) error {
 	pw, err := playwright.Run()
 	if err != nil {
 		return err
@@ -59,7 +67,7 @@ func (p *PresentationPlayer) initialize() error {
 	p.pw = pw
 
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(false),
+		Headless: playwright.Bool(headless),
 		Args: []string{
 			"--enable-web-bluetooth",
 			"--use-fake-ui-for-media-stream",

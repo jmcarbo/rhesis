@@ -8,6 +8,7 @@ A Go program that reads a Markdown script and generates, plays, and records pres
 - **HTML generation**: Creates beautiful HTML presentations with CSS styling
 - **Timing control**: Configurable slide durations for smooth transitions
 - **Transcription support**: Display explanatory text alongside each slide
+- **Audio generation**: Generate voice narration from transcriptions using ElevenLabs
 - **Image support**: Embed images directly in slides (PNG, JPG, GIF, WebP)
 - **Automatic playback**: Play presentations automatically with proper timing
 - **Recording capability**: Record presentations to video files (WebM, MP4) using Playwright
@@ -36,6 +37,19 @@ For video recording functionality, you need to install Playwright browsers:
 go run github.com/playwright-community/playwright-go/cmd/playwright@latest install
 ```
 
+For audio/video merging when using `-sound` with `-record`, you need ffmpeg:
+
+```bash
+# macOS
+brew install ffmpeg
+
+# Ubuntu/Debian
+sudo apt-get install ffmpeg
+
+# Windows (using chocolatey)
+choco install ffmpeg
+```
+
 ## Usage
 
 ### Basic Usage
@@ -52,6 +66,22 @@ go run github.com/playwright-community/playwright-go/cmd/playwright@latest insta
 
 # Generate, play, and record presentation (MP4 format)
 ./bin/rhesis -script presentation.md -output presentation.html -play -record video.mp4
+
+# Generate presentation with audio narration
+./bin/rhesis -script presentation.md -output presentation.html -sound -elevenlabs-key YOUR_API_KEY
+
+# Generate with audio using environment variable for API key
+export ELEVENLABS_API_KEY=your_api_key
+./bin/rhesis -script presentation.md -output presentation.html -sound
+
+# Generate, play, and record with audio narration
+./bin/rhesis -script presentation.md -output presentation.html -sound -play -record video.mp4 -elevenlabs-key YOUR_API_KEY
+
+# Reuse existing audio files (skip generation)
+./bin/rhesis -script presentation.md -output presentation.html -sound -skip-audio-creation -play
+
+# Generate and record in background mode (no visible browser)
+./bin/rhesis -script presentation.md -output presentation.html -sound -play -record video.mp4 -background -elevenlabs-key YOUR_API_KEY
 ```
 
 ### Command Line Options
@@ -59,7 +89,12 @@ go run github.com/playwright-community/playwright-go/cmd/playwright@latest insta
 - `-script`: Path to the presentation script file (required)
 - `-output`: Output HTML file path (default: "presentation.html")
 - `-play`: Play the presentation after generating (optional)
+- `-background`: Run presentation in background/headless mode (optional, use with -play)
 - `-record`: Path to save video recording (optional, requires -play)
+- `-sound`: Generate audio narration from transcriptions using ElevenLabs (optional)
+- `-skip-audio-creation`: Skip audio generation if audio files already exist (optional, use with -sound)
+- `-elevenlabs-key`: ElevenLabs API key (optional, can also use ELEVENLABS_API_KEY env var)
+- `-voice`: ElevenLabs voice ID (optional, defaults to Rachel voice)
 
 ## Script Format
 
@@ -122,6 +157,20 @@ Transcription for the second slide goes here.
 - **Images**: Embed images using the `Image:` directive
 - **Links**: Standard Markdown links are supported
 - **Blockquotes**: Use `>` for quotations
+
+### Audio Generation
+
+When using the `-sound` flag, the tool will:
+1. Generate audio narration for each slide's transcription text using ElevenLabs API
+2. Automatically adjust slide duration if the audio is longer than the specified duration
+3. Play the audio synchronized with slide transitions during presentation playback
+4. When combined with `-record`, automatically merge the audio with the video recording using ffmpeg
+
+To use audio generation:
+- Sign up for an ElevenLabs account and get an API key
+- Set the API key via `-elevenlabs-key` flag or `ELEVENLABS_API_KEY` environment variable
+- Optionally specify a voice ID with `-voice` flag (defaults to Rachel voice)
+- Install ffmpeg if you want to record videos with audio narration
 
 ## Examples
 
