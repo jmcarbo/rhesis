@@ -290,6 +290,10 @@ const htmlTemplate = `<!DOCTYPE html>
         let startTime = null;
         let totalDuration = 0;
         
+        // Expose variables to window for player to monitor
+        window.isPlaying = false;
+        window.currentSlideIndex = 0;
+        
         const slides = document.querySelectorAll('.slide');
         const transcriptionSlides = document.querySelectorAll('.transcription-slide');
         const progressBar = document.getElementById('progressBar');
@@ -301,6 +305,9 @@ const htmlTemplate = `<!DOCTYPE html>
             totalDuration += parseInt(slide.dataset.duration) * 1000;
         });
         
+        // Expose totalDuration to window for player
+        window.totalDuration = totalDuration;
+        
         function showSlide(index) {
             slides.forEach(slide => slide.classList.remove('active'));
             transcriptionSlides.forEach(trans => trans.style.display = 'none');
@@ -309,6 +316,7 @@ const htmlTemplate = `<!DOCTYPE html>
                 slides[index].classList.add('active');
                 transcriptionSlides[index].style.display = 'block';
                 currentSlideIndex = index;
+                window.currentSlideIndex = index;
                 currentSlideSpan.textContent = index + 1;
                 
                 // Fade in transcription
@@ -340,6 +348,7 @@ const htmlTemplate = `<!DOCTYPE html>
         
         function startPresentation() {
             isPlaying = true;
+            window.isPlaying = true;
             startTime = Date.now();
             playBtn.textContent = 'Pause';
             
@@ -349,11 +358,15 @@ const htmlTemplate = `<!DOCTYPE html>
                 const currentSlide = slides[currentSlideIndex];
                 const duration = parseInt(currentSlide.dataset.duration) * 1000;
                 
+                console.log('Playing slide', currentSlideIndex + 1, 'of', slides.length, 'for', duration, 'ms');
+                
                 slideTimer = setTimeout(() => {
                     if (currentSlideIndex < slides.length - 1) {
+                        console.log('Advancing to next slide');
                         nextSlide();
                         advanceSlide();
                     } else {
+                        console.log('Reached last slide, stopping presentation');
                         stopPresentation();
                     }
                 }, duration);
@@ -366,6 +379,7 @@ const htmlTemplate = `<!DOCTYPE html>
         
         function stopPresentation() {
             isPlaying = false;
+            window.isPlaying = false;
             playBtn.textContent = 'Play';
             if (slideTimer) {
                 clearTimeout(slideTimer);
