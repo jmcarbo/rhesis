@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
+	"github.com/jmcarbo/rhesis/internal/audio"
 	"github.com/jmcarbo/rhesis/internal/generator"
 	"github.com/jmcarbo/rhesis/internal/player"
 	"github.com/jmcarbo/rhesis/internal/script"
@@ -21,11 +24,14 @@ func main() {
 		style         = flag.String("style", "modern", "Presentation style (modern, minimal, dark, elegant, or path to custom CSS file)")
 		transcription = flag.Bool("transcription", false, "Include transcription panel in presentation")
 		subtitlePath  = flag.String("subtitle", "", "Generate subtitle file (optional, .srt or .vtt)")
+		sound         = flag.Bool("sound", false, "Generate audio from transcriptions using ElevenLabs")
+		apiKey        = flag.String("elevenlabs-key", os.Getenv("ELEVENLABS_API_KEY"), "ElevenLabs API key (or set ELEVENLABS_API_KEY env var)")
+		voiceID       = flag.String("voice", "", "ElevenLabs voice ID (optional, defaults to Rachel)")
 	)
 	flag.Parse()
 
 	if *scriptPath == "" {
-		fmt.Println("Usage: rhesis -script <script-file> [-output <html-file>] [-style <style-name|css-file>] [-record <video-file>] [-play] [-transcription] [-subtitle <subtitle-file>]")
+		fmt.Println("Usage: rhesis -script <script-file> [-output <html-file>] [-style <style-name|css-file>] [-record <video-file>] [-play] [-transcription] [-subtitle <subtitle-file>] [-sound] [-elevenlabs-key <api-key>] [-voice <voice-id>]")
 		os.Exit(1)
 	}
 
@@ -34,9 +40,63 @@ func main() {
 		log.Fatalf("Failed to parse script: %v", err)
 	}
 
+	// Generate audio if requested
+	audioFiles := make([]string, 0)
+	if *sound {
+		if *apiKey == "" {
+			log.Fatal("ElevenLabs API key is required when using -sound flag. Use -elevenlabs-key or set ELEVENLABS_API_KEY environment variable.")
+		}
+
+		audioGen := audio.NewElevenLabsGenerator(audio.ElevenLabsConfig{
+			APIKey:  *apiKey,
+			VoiceID: *voiceID,
+		})
+
+		// Create audio output directory
+		audioDir := strings.TrimSuffix(*outputPath, filepath.Ext(*outputPath)) + "_audio"
+		if err := os.MkdirAll(audioDir, 0755); err != nil {
+			log.Fatalf("Failed to create audio directory: %v", err)
+		}
+
+		fmt.Println("Generating audio files...")
+		for i, slide := range parsedScript.Slides {
+			if slide.Transcription != "" {
+				audioPath := filepath.Join(audioDir, fmt.Sprintf("slide_%02d.mp3", i+1))
+				audioDuration, err := audioGen.GenerateAudio(slide.Transcription, audioPath)
+				if err != nil {
+					log.Printf("Warning: Failed to generate audio for slide %d: %v", i+1, err)
+					continue
+				}
+
+				// Get actual audio duration if possible
+				actualDuration, err := audio.GetAudioDuration(audioPath)
+				if err == nil {
+					audioDuration = actualDuration
+				}
+
+				// Adjust slide duration if audio is longer
+				audioDurationSeconds := int(audioDuration.Seconds())
+				if audioDurationSeconds > slide.Duration {
+					parsedScript.Slides[i].Duration = audioDurationSeconds + 1 // Add 1 second buffer
+					fmt.Printf("Adjusted slide %d duration from %ds to %ds to accommodate audio\n",
+						i+1, slide.Duration, parsedScript.Slides[i].Duration)
+				}
+
+				audioFiles = append(audioFiles, audioPath)
+				fmt.Printf("Generated audio for slide %d (duration: %v)\n", i+1, audioDuration)
+			}
+		}
+	}
+
 	gen := generator.NewHTMLGenerator()
-	if err := gen.GeneratePresentation(parsedScript, *outputPath, *style, *transcription); err != nil {
-		log.Fatalf("Failed to generate presentation: %v", err)
+	if *sound && len(audioFiles) > 0 {
+		if err := gen.GeneratePresentationWithAudio(parsedScript, *outputPath, *style, *transcription, audioFiles); err != nil {
+			log.Fatalf("Failed to generate presentation: %v", err)
+		}
+	} else {
+		if err := gen.GeneratePresentation(parsedScript, *outputPath, *style, *transcription); err != nil {
+			log.Fatalf("Failed to generate presentation: %v", err)
+		}
 	}
 
 	fmt.Printf("Presentation generated: %s\n", *outputPath)

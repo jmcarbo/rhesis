@@ -84,6 +84,10 @@ func NewHTMLGenerator() *HTMLGenerator {
 }
 
 func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string, theme string, includeTranscription bool) error {
+	return h.GeneratePresentationWithAudio(s, outputPath, theme, includeTranscription, nil)
+}
+
+func (h *HTMLGenerator) GeneratePresentationWithAudio(s *script.Script, outputPath string, theme string, includeTranscription bool, audioFiles []string) error {
 	styleCSS, err := h.styleManager.GetStyle(theme)
 	if err != nil {
 		return fmt.Errorf("failed to get style: %w", err)
@@ -94,11 +98,13 @@ func (h *HTMLGenerator) GeneratePresentation(s *script.Script, outputPath string
 		Slides               []SlideData
 		Style                template.CSS
 		IncludeTranscription bool
+		HasAudio             bool
 	}{
 		Script:               s,
-		Slides:               h.processSlides(s.Slides),
+		Slides:               h.processSlidesWithAudio(s.Slides, audioFiles),
 		Style:                template.CSS(styleCSS),
 		IncludeTranscription: includeTranscription,
+		HasAudio:             len(audioFiles) > 0,
 	}
 
 	file, err := os.Create(outputPath)
@@ -116,9 +122,14 @@ type SlideData struct {
 	ImageSrc          string
 	ContentHTML       template.HTML
 	TranscriptionHTML template.HTML
+	AudioSrc          string
 }
 
 func (h *HTMLGenerator) processSlides(slides []script.Slide) []SlideData {
+	return h.processSlidesWithAudio(slides, nil)
+}
+
+func (h *HTMLGenerator) processSlidesWithAudio(slides []script.Slide, audioFiles []string) []SlideData {
 	result := make([]SlideData, len(slides))
 	for i, slide := range slides {
 		result[i] = SlideData{
@@ -129,6 +140,9 @@ func (h *HTMLGenerator) processSlides(slides []script.Slide) []SlideData {
 		}
 		if slide.Image != "" {
 			result[i].ImageSrc = h.imageToBase64(slide.Image)
+		}
+		if i < len(audioFiles) && audioFiles[i] != "" {
+			result[i].AudioSrc = h.audioToBase64(audioFiles[i])
 		}
 	}
 	return result
@@ -169,6 +183,19 @@ func (h *HTMLGenerator) imageToBase64(imagePath string) string {
 	}
 
 	return fmt.Sprintf("data:%s;base64,%s", mimeType, base64Encode(data))
+}
+
+func (h *HTMLGenerator) audioToBase64(audioPath string) string {
+	data, err := os.ReadFile(audioPath)
+	if err != nil {
+		return ""
+	}
+
+	if len(data) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf("data:audio/mpeg;base64,%s", base64Encode(data))
 }
 
 func base64Encode(data []byte) string {
@@ -239,7 +266,7 @@ const htmlTemplate = `<!DOCTYPE html>
     <div class="presentation-container">
         <div class="slide-area">
             {{range .Slides}}
-            <div class="slide" data-duration="{{.Duration}}" data-index="{{.Index}}">
+            <div class="slide" data-duration="{{.Duration}}" data-index="{{.Index}}" {{if .AudioSrc}}data-audio="{{safeURL .AudioSrc}}"{{end}}>
                 <h1>{{.Title}}</h1>
                 {{if .Content}}<div class="slide-content">{{.ContentHTML}}</div>{{end}}
                 {{if .ImageSrc}}<img src="{{safeURL .ImageSrc}}" alt="{{.Title}}">{{end}}
@@ -277,6 +304,7 @@ const htmlTemplate = `<!DOCTYPE html>
         let slideTimer = null;
         let startTime = null;
         let totalDuration = 0;
+        let currentAudio = null;
         
         // Expose variables to window for player to monitor
         window.isPlaying = false;
@@ -305,6 +333,12 @@ const htmlTemplate = `<!DOCTYPE html>
                 transcriptionContent.classList.remove('active');
             }
             
+            // Stop any currently playing audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
             if (index >= 0 && index < slides.length) {
                 slides[index].classList.add('active');
                 if (transcriptionContent && transcriptionSlides[index]) {
@@ -319,6 +353,12 @@ const htmlTemplate = `<!DOCTYPE html>
                     setTimeout(() => {
                         transcriptionContent.classList.add('active');
                     }, 100);
+                }
+                
+                // Play audio if available and presentation is playing
+                if (isPlaying && slides[index].dataset.audio) {
+                    currentAudio = new Audio(slides[index].dataset.audio);
+                    currentAudio.play().catch(e => console.error('Failed to play audio:', e));
                 }
             }
         }

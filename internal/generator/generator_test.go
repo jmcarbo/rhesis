@@ -45,7 +45,7 @@ func TestGeneratePresentation(t *testing.T) {
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Close()
 
-	err = generator.GeneratePresentation(testScript, tmpFile.Name(), "modern")
+	err = generator.GeneratePresentation(testScript, tmpFile.Name(), "modern", false)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 		return
@@ -130,7 +130,7 @@ func TestGeneratePresentationWithImage(t *testing.T) {
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Close()
 
-	err = generator.GeneratePresentation(testScript, tmpFile.Name(), "modern")
+	err = generator.GeneratePresentation(testScript, tmpFile.Name(), "modern", false)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 		return
@@ -211,7 +211,7 @@ func TestGeneratePresentationInvalidPath(t *testing.T) {
 	}
 
 	generator := NewHTMLGenerator()
-	err := generator.GeneratePresentation(testScript, "/invalid/path/file.html", "modern")
+	err := generator.GeneratePresentation(testScript, "/invalid/path/file.html", "modern", false)
 	if err == nil {
 		t.Error("Expected error for invalid path")
 	}
