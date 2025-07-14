@@ -208,8 +208,8 @@ body {
 
 /* Code container */
 .chroma { }  /* PreWrapper - Container for syntax highlighted code */
-.line { display: inline-block; }  /* Line wrapper */
-.cl { display: inline-block; }  /* CodeLine wrapper */
+.line { display: block; }  /* Line wrapper */
+.cl { display: block; }  /* CodeLine wrapper */
 
 .slide img {
     max-width: 85%;
