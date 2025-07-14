@@ -173,17 +173,10 @@ func main() {
 
 			if err := merger.MergeAudioWithVideo(*recordPath, audioFiles, durations, mergedPath); err != nil {
 				log.Printf("Warning: Failed to merge audio with video: %v", err)
-				log.Printf("Video saved without audio to: %s", *recordPath)
+				log.Printf("Original video saved without audio to: %s", *recordPath)
 			} else {
-				// Move merged video to original path
-				if err := os.Remove(*recordPath); err != nil {
-					log.Printf("Warning: Could not remove original video: %v", err)
-				} else if err := os.Rename(mergedPath, *recordPath); err != nil {
-					log.Printf("Warning: Could not rename merged video: %v", err)
-					fmt.Printf("Merged video saved to: %s\n", mergedPath)
-				} else {
-					fmt.Printf("Video with audio saved to: %s\n", *recordPath)
-				}
+				fmt.Printf("Original video (no audio): %s\n", *recordPath)
+				fmt.Printf("Video with audio: %s\n", mergedPath)
 			}
 		}
 	}
