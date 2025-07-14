@@ -76,11 +76,14 @@ func main() {
 						audioDuration, err := audio.GetAudioDuration(audioPath)
 						if err == nil {
 							audioDurationSeconds := int(audioDuration.Seconds())
+							originalDuration := slide.Duration
 							if audioDurationSeconds > slide.Duration {
 								parsedScript.Slides[i].Duration = audioDurationSeconds + 1 // Add 1 second buffer
 								fmt.Printf("Adjusted slide %d duration from %ds to %ds to accommodate audio\n",
-									i+1, slide.Duration, parsedScript.Slides[i].Duration)
+									i+1, originalDuration, parsedScript.Slides[i].Duration)
 							}
+						} else {
+							fmt.Printf("Warning: Could not get duration for audio file %s: %v\n", audioPath, err)
 						}
 
 						audioFiles = append(audioFiles, audioPath)
@@ -105,10 +108,11 @@ func main() {
 
 				// Adjust slide duration if audio is longer
 				audioDurationSeconds := int(audioDuration.Seconds())
+				originalDuration := slide.Duration
 				if audioDurationSeconds > slide.Duration {
 					parsedScript.Slides[i].Duration = audioDurationSeconds + 1 // Add 1 second buffer
 					fmt.Printf("Adjusted slide %d duration from %ds to %ds to accommodate audio\n",
-						i+1, slide.Duration, parsedScript.Slides[i].Duration)
+						i+1, originalDuration, parsedScript.Slides[i].Duration)
 				}
 
 				audioFiles = append(audioFiles, audioPath)
@@ -168,9 +172,12 @@ func main() {
 
 			// Extract slide durations
 			durations := make([]int, len(parsedScript.Slides))
+			totalExpectedDuration := 0
 			for i, slide := range parsedScript.Slides {
 				durations[i] = slide.Duration
+				totalExpectedDuration += slide.Duration
 			}
+			fmt.Printf("Expected total duration: %d seconds\n", totalExpectedDuration)
 
 			// Create output path for merged video
 			mergedPath := strings.TrimSuffix(*recordPath, filepath.Ext(*recordPath)) + "_with_audio" + filepath.Ext(*recordPath)

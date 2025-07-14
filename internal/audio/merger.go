@@ -92,6 +92,8 @@ func (m *AudioVideoMerger) createTimedAudioTrack(audioFiles []string, slideDurat
 					fmt.Sprintf("[%d:a]apad=pad_dur=%.3f[a%d]", inputIndex, silenceDuration, i))
 			} else if audioSeconds > slideSeconds {
 				// Audio is longer than slide, trim it to match slide duration
+				fmt.Printf("  WARNING: Audio (%.2fs) is longer than slide duration (%.2fs)\n", audioSeconds, slideSeconds)
+				fmt.Printf("  This should not happen if slide durations were adjusted properly!\n")
 				fmt.Printf("  Trimming audio to %.2fs\n", slideSeconds)
 				filterParts = append(filterParts,
 					fmt.Sprintf("[%d:a]atrim=0:%.3f,asetpts=PTS-STARTPTS[a%d]", inputIndex, slideSeconds, i))
@@ -168,6 +170,12 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 	delay := videoDuration - audioDuration
 	fmt.Printf("Video duration: %.2fs, Audio duration: %.2fs, Delay: %.2fs\n", videoDuration, audioDuration, delay)
 
+	if delay < -1.0 {
+		// Video is significantly shorter than audio - this indicates a problem
+		fmt.Printf("WARNING: Video is %.2fs shorter than expected audio duration!\n", -delay)
+		fmt.Printf("This usually means the video recording was truncated or stopped early.\n")
+	}
+
 	// First, detect the input video codec
 	probeCmd := exec.Command(m.ffmpegPath, "-i", videoPath)
 	probeOutput, _ := probeCmd.CombinedOutput()
@@ -198,16 +206,18 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		fmt.Printf("Transcoding required: H.264 to WebM\n")
 	}
 
-	args := []string{
-		"-y", // Overwrite output
-		"-i", videoPath,
-	}
+	// Determine how to handle the sync
+	args := []string{"-y"} // Overwrite output
 
-	// Add audio with delay if needed
-	if delay > 0.5 { // Only add delay if it's significant
-		// Add silence at the beginning of audio
-		args = append(args, "-itsoffset", fmt.Sprintf("%.3f", delay), "-i", audioPath)
+	if delay > 0.5 { // If there's significant delay, trim the video start
+		// Trim the beginning of the video to match when audio should start
+		args = append(args, "-ss", fmt.Sprintf("%.3f", delay))
+		args = append(args, "-i", videoPath)
+		args = append(args, "-i", audioPath)
+		fmt.Printf("Trimming %.2fs from video start to sync with audio\n", delay)
 	} else {
+		// No significant delay, use files as-is
+		args = append(args, "-i", videoPath)
 		args = append(args, "-i", audioPath)
 	}
 
@@ -246,12 +256,25 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		args = append(args, "-c:a", "aac", "-b:a", "192k") // Default to AAC
 	}
 
-	args = append(args,
-		"-map", "0:v:0", // Map video from first input
-		"-map", "1:a:0", // Map audio from second input
-		"-shortest", // End output when shortest input ends
-		outputPath,
-	)
+	// For negative delays (video shorter than audio), we have a problem
+	// The video recording was likely truncated
+	if delay < -1.0 {
+		// Don't use -shortest, instead specify exact duration
+		args = append(args,
+			"-map", "0:v:0", // Map video from first input
+			"-map", "1:a:0", // Map audio from second input
+			"-t", fmt.Sprintf("%.3f", videoDuration), // Use video duration
+			outputPath,
+		)
+		fmt.Printf("Using video duration (%.2fs) as output duration\n", videoDuration)
+	} else {
+		args = append(args,
+			"-map", "0:v:0", // Map video from first input
+			"-map", "1:a:0", // Map audio from second input
+			"-shortest", // End output when shortest input ends
+			outputPath,
+		)
+	}
 
 	cmd := exec.Command(m.ffmpegPath, args...)
 	output, err := cmd.CombinedOutput()

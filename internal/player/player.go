@@ -258,6 +258,17 @@ func (p *PresentationPlayer) playPresentation() error {
 
 	// Wait a bit more to ensure video capture completes
 	time.Sleep(2 * time.Second)
+
+	// Check if we might have hit a recording limit
+	if totalDurationMs > 180000 { // More than 3 minutes
+		fmt.Printf("\nWARNING: Presentation is longer than 3 minutes (%.1fs).\n", totalDurationMs/1000)
+		fmt.Printf("Some browsers/codecs may truncate long video recordings.\n")
+		fmt.Printf("If the video is shorter than expected, consider:\n")
+		fmt.Printf("- Breaking the presentation into smaller segments\n")
+		fmt.Printf("- Using a different output format (WebM vs MP4)\n")
+		fmt.Printf("- Recording without video and adding audio separately\n")
+	}
+
 	return nil
 }
 
