@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction to Go Programming</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            color: #fff;
+            overflow: hidden;
+        }
+        .presentation-container {
+            display: flex;
+            height: 100vh;
+        }
+        .slide-area {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+        }
+        .transcription-area {
+            flex: 1;
+            background: #2c3e50;
+            padding: 20px;
+            border-left: 2px solid #3498db;
+            display: flex;
+            flex-direction: column;
+        }
+        .slide {
+            display: none;
+            text-align: center;
+            max-width: 100%;
+        }
+        .slide.active {
+            display: block;
+        }
+        .slide h1 {
+            font-size: 3em;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .slide p {
+            font-size: 1.5em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            max-width: 800px;
+        }
+        .slide img {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .transcription-title {
+            font-size: 1.2em;
+            color: #3498db;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .transcription-content {
+            font-size: 1em;
+            line-height: 1.6;
+            color: #ecf0f1;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .transcription-content.active {
+            opacity: 1;
+        }
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: #3498db;
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+        .slide-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation-container">
+        <div class="slide-area">
+            
+            <div class="slide" data-duration="10" data-index="0">
+                <h1>Welcome to Go</h1>
+                <p>Go is a programming language developed by Google. It&#39;s fast, efficient, and perfect for modern software development.</p>
+                
+            </div>
+            
+            <div class="slide" data-duration="12" data-index="1">
+                <h1>Why Choose Go?</h1>
+                <p>• Fast compilation
+• Built-in concurrency
+• Simple syntax
+• Strong standard library
+• Cross-platform support</p>
+                
+            </div>
+            
+            <div class="slide" data-duration="8" data-index="2">
+                <h1>Go Syntax Basics</h1>
+                <p>func main() {
+    fmt.Println(&#34;Hello, World!&#34;)
+}</p>
+                
+            </div>
+            
+            <div class="slide" data-duration="15" data-index="3">
+                <h1>Goroutines and Channels</h1>
+                <p>go func() {
+    ch &lt;- &#34;Hello from goroutine!&#34;
+}()
+
+message := &lt;-ch
+fmt.Println(message)</p>
+                
+            </div>
+            
+            <div class="slide" data-duration="8" data-index="4">
+                <h1>Thank You!</h1>
+                <p>Questions?
+
+Learn more at golang.org</p>
+                
+            </div>
+            
+        </div>
+        
+        <div class="transcription-area">
+            <div class="transcription-title">Transcription</div>
+            <div class="transcription-content" id="transcriptionContent">
+                
+                <div class="transcription-slide" data-index="0" style="display: none;">
+                    Welcome to our presentation on Go programming. Go, also known as Golang, is a statically typed, compiled programming language designed at Google. It was created by Robert Griesemer, Rob Pike, and Ken Thompson in 2007 and was first released in 2009. Go is known for its simplicity, efficiency, and strong support for concurrent programming.
+                </div>
+                
+                <div class="transcription-slide" data-index="1" style="display: none;">
+                    There are several compelling reasons to choose Go for your next project. First, Go compiles extremely quickly, which makes development cycles much faster. Second, Go has built-in support for concurrency through goroutines and channels, making it easy to write programs that can handle multiple tasks simultaneously. The syntax is clean and simple, making it easy to learn and maintain. Go also comes with a comprehensive standard library that covers most common programming tasks, and it supports cross-platform development out of the box.
+                </div>
+                
+                <div class="transcription-slide" data-index="2" style="display: none;">
+                    Let&#39;s look at basic Go syntax. Here we have a simple Hello World program. In Go, the main function is the entry point of your program. We use the fmt package to print to the console. Notice that Go uses curly braces for code blocks and semicolons are optional at the end of statements. The language is designed to be readable and straightforward.
+                </div>
+                
+                <div class="transcription-slide" data-index="3" style="display: none;">
+                    One of Go&#39;s most powerful features is its concurrency model. Goroutines are lightweight threads that can run concurrently with your main program. You start a goroutine by using the &#39;go&#39; keyword before a function call. Channels are used to communicate between goroutines safely. In this example, we&#39;re creating a goroutine that sends a message through a channel, and then we receive that message in the main goroutine.
+                </div>
+                
+                <div class="transcription-slide" data-index="4" style="display: none;">
+                    Thank you for your attention during this introduction to Go programming. I hope this presentation has given you a good overview of what makes Go special and why it&#39;s become so popular among developers. If you have any questions, please feel free to ask. To learn more about Go, I encourage you to visit the official website at golang.org, where you&#39;ll find comprehensive documentation, tutorials, and examples.
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <div class="slide-counter">
+        <span id="currentSlide">1</span> / <span id="totalSlides">5</span>
+    </div>
+    
+    <div class="controls">
+        <button class="btn" id="prevBtn" onclick="previousSlide()">Previous</button>
+        <button class="btn" id="playBtn" onclick="togglePlayback()">Play</button>
+        <button class="btn" id="nextBtn" onclick="nextSlide()">Next</button>
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        let isPlaying = false;
+        let slideTimer = null;
+        let startTime = null;
+        let totalDuration = 0;
+        
+        const slides = document.querySelectorAll('.slide');
+        const transcriptionSlides = document.querySelectorAll('.transcription-slide');
+        const progressBar = document.getElementById('progressBar');
+        const currentSlideSpan = document.getElementById('currentSlide');
+        const playBtn = document.getElementById('playBtn');
+        
+        
+        slides.forEach(slide => {
+            totalDuration += parseInt(slide.dataset.duration) * 1000;
+        });
+        
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            transcriptionSlides.forEach(trans => trans.style.display = 'none');
+            
+            if (index >= 0 && index < slides.length) {
+                slides[index].classList.add('active');
+                transcriptionSlides[index].style.display = 'block';
+                currentSlideIndex = index;
+                currentSlideSpan.textContent = index + 1;
+                
+                
+                setTimeout(() => {
+                    transcriptionSlides[index].classList.add('active');
+                }, 100);
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex < slides.length - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+        
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+        
+        function togglePlayback() {
+            if (isPlaying) {
+                stopPresentation();
+            } else {
+                startPresentation();
+            }
+        }
+        
+        function startPresentation() {
+            isPlaying = true;
+            startTime = Date.now();
+            playBtn.textContent = 'Pause';
+            
+            function advanceSlide() {
+                if (!isPlaying) return;
+                
+                const currentSlide = slides[currentSlideIndex];
+                const duration = parseInt(currentSlide.dataset.duration) * 1000;
+                
+                slideTimer = setTimeout(() => {
+                    if (currentSlideIndex < slides.length - 1) {
+                        nextSlide();
+                        advanceSlide();
+                    } else {
+                        stopPresentation();
+                    }
+                }, duration);
+                
+                updateProgress();
+            }
+            
+            advanceSlide();
+        }
+        
+        function stopPresentation() {
+            isPlaying = false;
+            playBtn.textContent = 'Play';
+            if (slideTimer) {
+                clearTimeout(slideTimer);
+                slideTimer = null;
+            }
+        }
+        
+        function updateProgress() {
+            if (!isPlaying || !startTime) return;
+            
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / totalDuration * 100, 100);
+            progressBar.style.width = progress + '%';
+            
+            if (isPlaying) {
+                requestAnimationFrame(updateProgress);
+            }
+        }
+        
+        
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight':
+                case ' ':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    previousSlide();
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    togglePlayback();
+                    break;
+            }
+        });
+        
+        
+        showSlide(0);
+        
+        
+        window.addEventListener('load', () => {
+            document.body.setAttribute('data-ready', 'true');
+        });
+    </script>
+</body>
+</html>
