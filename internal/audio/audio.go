@@ -8,7 +8,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -134,14 +137,26 @@ func (g *ElevenLabsGenerator) GenerateAudio(text string, outputPath string) (tim
 	return duration, nil
 }
 
-// GetAudioDuration attempts to get the actual duration of an MP3 file
-// This is a placeholder - in production, you'd use an audio library
+// GetAudioDuration gets the actual duration of an audio file using ffmpeg
 func GetAudioDuration(filePath string) (time.Duration, error) {
-	// For now, return an estimate based on file size
-	// Average MP3 bitrate is around 128kbps
+	cmd := exec.Command("ffmpeg", "-i", filePath)
+	output, _ := cmd.CombinedOutput()
+	outputStr := string(output)
+
+	// Extract duration using regex
+	durationRegex := regexp.MustCompile(`Duration: (\d{2}):(\d{2}):(\d{2}\.\d+)`)
+	if matches := durationRegex.FindStringSubmatch(outputStr); len(matches) > 3 {
+		hours, _ := strconv.ParseFloat(matches[1], 64)
+		minutes, _ := strconv.ParseFloat(matches[2], 64)
+		seconds, _ := strconv.ParseFloat(matches[3], 64)
+		totalSeconds := hours*3600 + minutes*60 + seconds
+		return time.Duration(totalSeconds * float64(time.Second)), nil
+	}
+
+	// Fall back to file size estimate if ffmpeg fails
 	info, err := os.Stat(filePath)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("could not extract duration from audio file and stat failed: %w", err)
 	}
 
 	// Rough estimate: file size in bytes / (128000 bits/sec / 8 bits/byte)
