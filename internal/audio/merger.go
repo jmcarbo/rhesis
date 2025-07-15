@@ -23,6 +23,25 @@ func NewAudioVideoMerger() *AudioVideoMerger {
 	}
 }
 
+// GetVideoDuration gets the duration of a video file
+func GetVideoDuration(videoPath string) (time.Duration, error) {
+	cmd := exec.Command("ffmpeg", "-i", videoPath)
+	output, _ := cmd.CombinedOutput()
+	outputStr := string(output)
+
+	// Extract duration using regex
+	durationRegex := regexp.MustCompile(`Duration: (\d{2}):(\d{2}):(\d{2}\.\d+)`)
+	if matches := durationRegex.FindStringSubmatch(outputStr); len(matches) > 3 {
+		hours, _ := strconv.ParseFloat(matches[1], 64)
+		minutes, _ := strconv.ParseFloat(matches[2], 64)
+		seconds, _ := strconv.ParseFloat(matches[3], 64)
+		totalSeconds := hours*3600 + minutes*60 + seconds
+		return time.Duration(totalSeconds * float64(time.Second)), nil
+	}
+
+	return 0, fmt.Errorf("could not extract duration from video file")
+}
+
 // MergeAudioWithVideo merges audio files with a video recording based on slide timings
 func (m *AudioVideoMerger) MergeAudioWithVideo(videoPath string, audioFiles []string, slideDurations []int, outputPath string) error {
 	// Check if ffmpeg is available
