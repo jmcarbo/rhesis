@@ -44,7 +44,7 @@ func main() {
 			fmt.Println("  -video: Input video file path")
 			fmt.Println("  -audio: Input audio file path (single file) or directory (multiple audio files)")
 			fmt.Println("  -output: Output video file path")
-			fmt.Println("  -durations: Comma-separated slide durations in seconds (required when -audio is a directory)")
+			fmt.Println("  -durations: Comma-separated slide durations in seconds (optional - will be inferred from audio files if not provided)")
 			os.Exit(1)
 		}
 
@@ -106,7 +106,7 @@ func main() {
 							// Always adjust slide duration to audio duration + 0.5 seconds
 							parsedScript.Slides[i].Duration = int(audioDurationSeconds + 0.5)
 							fmt.Printf("Adjusted slide %d duration from %ds to %.1fs to match audio + 0.5s buffer\n",
-								i+1, originalDuration, audioDurationSeconds + 0.5)
+								i+1, originalDuration, audioDurationSeconds+0.5)
 						} else {
 							fmt.Printf("Warning: Could not get duration for audio file %s: %v\n", audioPath, err)
 						}
@@ -136,7 +136,7 @@ func main() {
 				originalDuration := slide.Duration
 				parsedScript.Slides[i].Duration = int(audioDurationSeconds + 0.5)
 				fmt.Printf("Adjusted slide %d duration from %ds to %.1fs to match audio + 0.5s buffer\n",
-					i+1, originalDuration, audioDurationSeconds + 0.5)
+					i+1, originalDuration, audioDurationSeconds+0.5)
 
 				audioFiles = append(audioFiles, audioPath)
 				fmt.Printf("Generated audio for slide %d (duration: %v)\n", i+1, audioDuration)
@@ -228,22 +228,7 @@ func runFuseMode(videoPath, audioPath, outputPath, durationsStr string) error {
 
 	if fileInfo.IsDir() {
 		// Multiple audio files in a directory
-		if durationsStr == "" {
-			return fmt.Errorf("durations parameter is required when audio path is a directory")
-		}
-
-		// Parse durations
-		durationStrs := strings.Split(durationsStr, ",")
-		durations := make([]int, len(durationStrs))
-		for i, dStr := range durationStrs {
-			d, err := strconv.Atoi(strings.TrimSpace(dStr))
-			if err != nil {
-				return fmt.Errorf("invalid duration at position %d: %w", i+1, err)
-			}
-			durations[i] = d
-		}
-
-		// Find audio files in the directory
+		// Find audio files in the directory first
 		audioFiles := make([]string, 0)
 		entries, err := os.ReadDir(audioPath)
 		if err != nil {
@@ -263,9 +248,37 @@ func runFuseMode(videoPath, audioPath, outputPath, durationsStr string) error {
 
 		fmt.Printf("Found %d audio files in directory\n", len(audioFiles))
 
-		// Ensure we have enough durations
-		if len(durations) < len(audioFiles) {
-			return fmt.Errorf("not enough durations provided: have %d durations for %d audio files", len(durations), len(audioFiles))
+		// Parse or infer durations
+		var durations []int
+		if durationsStr == "" {
+			// Infer durations from audio files
+			fmt.Println("No durations provided, inferring from audio files...")
+			durations = make([]int, len(audioFiles))
+			for i, audioFile := range audioFiles {
+				duration, err := audio.GetAudioDuration(audioFile)
+				if err != nil {
+					return fmt.Errorf("failed to get duration for audio file %s: %w", audioFile, err)
+				}
+				// Add 0.5 second buffer to each audio duration
+				durations[i] = int(duration.Seconds() + 0.5)
+				fmt.Printf("  %s: %.2fs (using %.0fs with buffer)\n", filepath.Base(audioFile), duration.Seconds(), duration.Seconds()+0.5)
+			}
+		} else {
+			// Use provided durations
+			durationStrs := strings.Split(durationsStr, ",")
+			durations = make([]int, len(durationStrs))
+			for i, dStr := range durationStrs {
+				d, err := strconv.Atoi(strings.TrimSpace(dStr))
+				if err != nil {
+					return fmt.Errorf("invalid duration at position %d: %w", i+1, err)
+				}
+				durations[i] = d
+			}
+
+			// Ensure we have enough durations
+			if len(durations) < len(audioFiles) {
+				return fmt.Errorf("not enough durations provided: have %d durations for %d audio files", len(durations), len(audioFiles))
+			}
 		}
 
 		// Merge with multiple audio files
