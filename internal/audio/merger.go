@@ -48,6 +48,13 @@ func (m *AudioVideoMerger) MergeAudioWithVideo(videoPath string, audioFiles []st
 	if err := m.checkFFmpeg(); err != nil {
 		return fmt.Errorf("ffmpeg not available: %w", err)
 	}
+	
+	// Verify input video has a video stream
+	probeCmd := exec.Command(m.ffmpegPath, "-i", videoPath)
+	probeOutput, _ := probeCmd.CombinedOutput()
+	if !strings.Contains(string(probeOutput), "Video:") {
+		return fmt.Errorf("input video file has no video stream: %s\nFFmpeg output: %s", videoPath, string(probeOutput))
+	}
 
 	// Create a temporary directory for intermediate files
 	tempDir, err := os.MkdirTemp("", "rhesis_merge_*")
@@ -213,6 +220,7 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 			"-i", videoPath,
 			"-filter:v", fmt.Sprintf("setpts=%.4f*PTS", 1.0/speedFactor),
 			"-an", // Remove audio track from the adjusted video
+			"-map", "0:v", // Map all video streams
 		}
 
 		// Choose codec based on output format
@@ -242,6 +250,13 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		if err != nil {
 			return fmt.Errorf("failed to adjust video framerate: %w\nOutput: %s", err, string(adjustOutput))
 		}
+		
+		// Verify the adjusted video has a valid video stream
+		verifyCmd := exec.Command(m.ffmpegPath, "-i", adjustedVideoPath)
+		verifyOutput, _ := verifyCmd.CombinedOutput()
+		if !strings.Contains(string(verifyOutput), "Video:") {
+			return fmt.Errorf("adjusted video has no video stream. FFmpeg output: %s", string(verifyOutput))
+		}
 
 		// Use the adjusted video for merging
 		videoPath = adjustedVideoPath
@@ -255,10 +270,15 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		fmt.Printf("This usually means the video recording was truncated or stopped early.\n")
 	}
 
-	// First, detect the input video codec
+	// First, detect the input video codec and verify video stream exists
 	probeCmd := exec.Command(m.ffmpegPath, "-i", videoPath)
 	probeOutput, _ := probeCmd.CombinedOutput()
 	probeStr := string(probeOutput)
+	
+	// Check if video stream exists
+	if !strings.Contains(probeStr, "Video:") {
+		return fmt.Errorf("no video stream found in input file: %s", videoPath)
+	}
 
 	// Determine output format based on file extension
 	outputExt := strings.ToLower(filepath.Ext(outputPath))
@@ -341,7 +361,7 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 	if delay < -1.0 {
 		// Don't use -shortest, instead specify exact duration
 		args = append(args,
-			"-map", "0:v:0", // Map video from first input
+			"-map", "0:v", // Map all video streams from first input
 			"-map", "1:a:0", // Map audio from second input
 			"-t", fmt.Sprintf("%.3f", videoDuration), // Use video duration
 			outputPath,
@@ -349,12 +369,15 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 		fmt.Printf("Using video duration (%.2fs) as output duration\n", videoDuration)
 	} else {
 		args = append(args,
-			"-map", "0:v:0", // Map video from first input
+			"-map", "0:v", // Map all video streams from first input
 			"-map", "1:a:0", // Map audio from second input
 			"-shortest", // End output when shortest input ends
 			outputPath,
 		)
 	}
+	
+	// Log the full ffmpeg command for debugging
+	fmt.Printf("Running ffmpeg command: %s %s\n", m.ffmpegPath, strings.Join(args, " "))
 
 	cmd := exec.Command(m.ffmpegPath, args...)
 	output, err := cmd.CombinedOutput()
