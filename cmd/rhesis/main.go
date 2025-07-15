@@ -98,16 +98,15 @@ func main() {
 						// Audio file exists, skip generation
 						fmt.Printf("Using existing audio file for slide %d: %s\n", i+1, audioPath)
 
-						// Get audio duration to adjust slide timing if needed
+						// Get audio duration to adjust slide timing
 						audioDuration, err := audio.GetAudioDuration(audioPath)
 						if err == nil {
-							audioDurationSeconds := int(audioDuration.Seconds())
+							audioDurationSeconds := audioDuration.Seconds()
 							originalDuration := slide.Duration
-							if audioDurationSeconds > slide.Duration {
-								parsedScript.Slides[i].Duration = audioDurationSeconds + 1 // Add 1 second buffer
-								fmt.Printf("Adjusted slide %d duration from %ds to %ds to accommodate audio\n",
-									i+1, originalDuration, parsedScript.Slides[i].Duration)
-							}
+							// Always adjust slide duration to audio duration + 0.5 seconds
+							parsedScript.Slides[i].Duration = int(audioDurationSeconds + 0.5)
+							fmt.Printf("Adjusted slide %d duration from %ds to %.1fs to match audio + 0.5s buffer\n",
+								i+1, originalDuration, audioDurationSeconds + 0.5)
 						} else {
 							fmt.Printf("Warning: Could not get duration for audio file %s: %v\n", audioPath, err)
 						}
@@ -132,14 +131,12 @@ func main() {
 					audioDuration = actualDuration
 				}
 
-				// Adjust slide duration if audio is longer
-				audioDurationSeconds := int(audioDuration.Seconds())
+				// Always adjust slide duration to audio duration + 0.5 seconds
+				audioDurationSeconds := audioDuration.Seconds()
 				originalDuration := slide.Duration
-				if audioDurationSeconds > slide.Duration {
-					parsedScript.Slides[i].Duration = audioDurationSeconds + 1 // Add 1 second buffer
-					fmt.Printf("Adjusted slide %d duration from %ds to %ds to accommodate audio\n",
-						i+1, originalDuration, parsedScript.Slides[i].Duration)
-				}
+				parsedScript.Slides[i].Duration = int(audioDurationSeconds + 0.5)
+				fmt.Printf("Adjusted slide %d duration from %ds to %.1fs to match audio + 0.5s buffer\n",
+					i+1, originalDuration, audioDurationSeconds + 0.5)
 
 				audioFiles = append(audioFiles, audioPath)
 				fmt.Printf("Generated audio for slide %d (duration: %v)\n", i+1, audioDuration)
