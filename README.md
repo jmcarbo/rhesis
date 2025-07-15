@@ -82,10 +82,17 @@ export ELEVENLABS_API_KEY=your_api_key
 
 # Generate and record in background mode (no visible browser)
 ./bin/rhesis -script presentation.md -output presentation.html -sound -play -record video.mp4 -background -elevenlabs-key YOUR_API_KEY
+
+# Fuse existing video and audio files (without presentation generation)
+./bin/rhesis -fuse -video input.webm -audio audio.mp3 -output output.mp4
+
+# Fuse video with multiple audio files from a directory
+./bin/rhesis -fuse -video input.webm -audio audio_dir/ -output output.mp4 -durations 10,15,20,10
 ```
 
 ### Command Line Options
 
+#### Presentation Mode
 - `-script`: Path to the presentation script file (required)
 - `-output`: Output HTML file path (default: "presentation.html")
 - `-play`: Play the presentation after generating (optional)
@@ -95,6 +102,13 @@ export ELEVENLABS_API_KEY=your_api_key
 - `-skip-audio-creation`: Skip audio generation if audio files already exist (optional, use with -sound)
 - `-elevenlabs-key`: ElevenLabs API key (optional, can also use ELEVENLABS_API_KEY env var)
 - `-voice`: ElevenLabs voice ID (optional, defaults to Rachel voice)
+
+#### Fuse Mode
+- `-fuse`: Enable fuse mode to merge existing video and audio files (optional)
+- `-video`: Input video file path (required in fuse mode)
+- `-audio`: Input audio file path or directory containing audio files (required in fuse mode)
+- `-output`: Output video file path (required in fuse mode)
+- `-durations`: Comma-separated slide durations in seconds (required when `-audio` is a directory)
 
 ## Script Format
 
@@ -264,6 +278,40 @@ Example:
 # Record a presentation as MP4
 ./bin/rhesis -script demo.md -play -record output/demo.mp4
 ```
+
+## Fuse Mode
+
+The fuse mode allows you to merge existing video and audio files without generating a presentation. This is useful when you have:
+- A video recording and want to add audio narration
+- Multiple audio clips that need to be synchronized with video segments
+- Pre-recorded content that needs audio/video synchronization
+
+### Usage Examples
+
+#### Single Audio File
+Merge a single audio file with a video:
+```bash
+./bin/rhesis -fuse -video recording.webm -audio narration.mp3 -output final.mp4
+```
+
+#### Multiple Audio Files
+Merge multiple audio files from a directory with specified timings:
+```bash
+./bin/rhesis -fuse -video recording.webm -audio audio_clips/ -output final.mp4 -durations 10,15,20,10
+```
+
+The `-durations` parameter specifies how long each audio clip should play for (in seconds). Audio files in the directory are processed in alphabetical order.
+
+### Supported Formats
+- **Video**: WebM, MP4
+- **Audio**: MP3, WAV, M4A
+- **Output**: WebM, MP4 (format determined by file extension)
+
+The tool will automatically:
+- Synchronize audio with video
+- Adjust video framerate if audio is significantly longer than video
+- Handle codec conversions between WebM and MP4 formats
+- Add appropriate padding or trimming to match durations
 
 ## Development
 

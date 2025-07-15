@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/jmcarbo/rhesis/internal/audio"
@@ -29,11 +30,36 @@ func main() {
 		voiceID       = flag.String("voice", "", "ElevenLabs voice ID (optional, defaults to Rachel)")
 		skipAudioGen  = flag.Bool("skip-audio-creation", false, "Skip audio generation if audio files already exist")
 		background    = flag.Bool("background", false, "Run presentation in background (headless mode)")
+		fuse          = flag.Bool("fuse", false, "Fuse mode: merge video and audio files (requires -video, -audio, and -output)")
+		videoPath     = flag.String("video", "", "Input video file path (for fuse mode)")
+		audioPath     = flag.String("audio", "", "Input audio file path or directory (for fuse mode)")
+		durations     = flag.String("durations", "", "Comma-separated slide durations in seconds (for fuse mode with audio directory)")
 	)
 	flag.Parse()
 
+	// Handle fuse mode separately
+	if *fuse {
+		if *videoPath == "" || *audioPath == "" || *outputPath == "" {
+			fmt.Println("Usage for fuse mode: rhesis -fuse -video <video-file> -audio <audio-file-or-directory> -output <output-file> [-durations <comma-separated-durations>]")
+			fmt.Println("  -video: Input video file path")
+			fmt.Println("  -audio: Input audio file path (single file) or directory (multiple audio files)")
+			fmt.Println("  -output: Output video file path")
+			fmt.Println("  -durations: Comma-separated slide durations in seconds (required when -audio is a directory)")
+			os.Exit(1)
+		}
+
+		// Run fuse mode
+		if err := runFuseMode(*videoPath, *audioPath, *outputPath, *durations); err != nil {
+			log.Fatalf("Fuse operation failed: %v", err)
+		}
+		return
+	}
+
+	// Normal presentation mode
 	if *scriptPath == "" {
 		fmt.Println("Usage: rhesis -script <script-file> [-output <html-file>] [-style <style-name|css-file>] [-record <video-file>] [-play] [-background] [-transcription] [-subtitle <subtitle-file>] [-sound] [-skip-audio-creation] [-elevenlabs-key <api-key>] [-voice <voice-id>]")
+		fmt.Println("\nOr for fuse mode:")
+		fmt.Println("  rhesis -fuse -video <video-file> -audio <audio-file-or-directory> -output <output-file> [-durations <comma-separated-durations>]")
 		os.Exit(1)
 	}
 
@@ -190,5 +216,80 @@ func main() {
 				fmt.Printf("Video with audio: %s\n", mergedPath)
 			}
 		}
+	}
+}
+
+// runFuseMode handles the fuse operation to merge video and audio files
+func runFuseMode(videoPath, audioPath, outputPath, durationsStr string) error {
+	// Check if audioPath is a file or directory
+	fileInfo, err := os.Stat(audioPath)
+	if err != nil {
+		return fmt.Errorf("failed to stat audio path: %w", err)
+	}
+
+	merger := audio.NewAudioVideoMerger()
+
+	if fileInfo.IsDir() {
+		// Multiple audio files in a directory
+		if durationsStr == "" {
+			return fmt.Errorf("durations parameter is required when audio path is a directory")
+		}
+
+		// Parse durations
+		durationStrs := strings.Split(durationsStr, ",")
+		durations := make([]int, len(durationStrs))
+		for i, dStr := range durationStrs {
+			d, err := strconv.Atoi(strings.TrimSpace(dStr))
+			if err != nil {
+				return fmt.Errorf("invalid duration at position %d: %w", i+1, err)
+			}
+			durations[i] = d
+		}
+
+		// Find audio files in the directory
+		audioFiles := make([]string, 0)
+		entries, err := os.ReadDir(audioPath)
+		if err != nil {
+			return fmt.Errorf("failed to read audio directory: %w", err)
+		}
+
+		// Sort entries by name to ensure consistent ordering
+		for _, entry := range entries {
+			if !entry.IsDir() && (strings.HasSuffix(entry.Name(), ".mp3") || strings.HasSuffix(entry.Name(), ".wav") || strings.HasSuffix(entry.Name(), ".m4a")) {
+				audioFiles = append(audioFiles, filepath.Join(audioPath, entry.Name()))
+			}
+		}
+
+		if len(audioFiles) == 0 {
+			return fmt.Errorf("no audio files found in directory: %s", audioPath)
+		}
+
+		fmt.Printf("Found %d audio files in directory\n", len(audioFiles))
+
+		// Ensure we have enough durations
+		if len(durations) < len(audioFiles) {
+			return fmt.Errorf("not enough durations provided: have %d durations for %d audio files", len(durations), len(audioFiles))
+		}
+
+		// Merge with multiple audio files
+		return merger.MergeAudioWithVideo(videoPath, audioFiles, durations, outputPath)
+
+	} else {
+		// Single audio file
+		fmt.Println("Merging single audio file with video...")
+
+		// Get video duration to use as the single slide duration
+		videoDurationTime, err := audio.GetVideoDuration(videoPath)
+		var videoDuration int
+		if err != nil {
+			// If we can't get video duration, use a large default
+			fmt.Printf("Warning: Could not get video duration, using default: %v\n", err)
+			videoDuration = 300 // 5 minutes default
+		} else {
+			videoDuration = int(videoDurationTime.Seconds())
+		}
+
+		// For a single audio file, treat it as one slide with the video's duration
+		return merger.MergeAudioWithVideo(videoPath, []string{audioPath}, []int{videoDuration}, outputPath)
 	}
 }
