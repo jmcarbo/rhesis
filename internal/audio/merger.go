@@ -195,7 +195,7 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 			"-filter:v", fmt.Sprintf("setpts=%.4f*PTS", 1.0/speedFactor),
 			"-an", // Remove audio track from the adjusted video
 		}
-		
+
 		// Choose codec based on output format
 		videoExt := strings.ToLower(filepath.Ext(videoPath))
 		if videoExt == ".webm" {
@@ -213,9 +213,9 @@ func (m *AudioVideoMerger) mergeFiles(videoPath, audioPath, outputPath string) e
 				"-crf", "23",
 			)
 		}
-		
+
 		adjustArgs = append(adjustArgs, adjustedVideoPath)
-		
+
 		// Use ffmpeg to adjust the video framerate/speed
 		adjustCmd := exec.Command(m.ffmpegPath, adjustArgs...)
 
